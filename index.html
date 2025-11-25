@@ -44,7 +44,7 @@
         // 2. To secure this key, go to Google Cloud Console > APIs & Services > Credentials.
         // 3. Edit this key and add 'HTTP referrers' restrictions to only allow your domain.
         const firebaseConfig = {
-            apiKey: "AIzaSyD1VBqOe92fyEe7Z565V-zyRSXz3vtZkEY", 
+            apiKey: "PASTE_YOUR_API_KEY_HERE", 
             authDomain: "dashboard-479319.firebaseapp.com",
             projectId: "dashboard-479319",
             storageBucket: "dashboard-479319.firebasestorage.app",
@@ -88,6 +88,8 @@
             Lock: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
             Unlock: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>,
             LogOut: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>,
+            ChevronDown: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="6 9 12 15 18 9"/></svg>,
+            ChevronRight: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="9 18 15 12 9 6"/></svg>,
         };
 
         const IconRenderer = ({ iconName, className }) => {
@@ -217,6 +219,7 @@
             const [isEditMode, setIsEditMode] = useState(false);
             const [loading, setLoading] = useState(true);
             const [authChecking, setAuthChecking] = useState(true);
+            const [collapsedCategories, setCollapsedCategories] = useState({});
 
             // Modal States
             const [modalType, setModalType] = useState(null); // 'LINK' or 'CATEGORY'
@@ -268,6 +271,13 @@
 
             const handleLogout = () => {
                 signOut(auth);
+            };
+
+            const toggleCategory = (id) => {
+                setCollapsedCategories(prev => ({
+                    ...prev,
+                    [id]: !prev[id]
+                }));
             };
 
             const handleSave = async () => {
@@ -446,16 +456,27 @@
 
                     {/* Categories Grid */}
                     <div className="space-y-10">
-                    {filteredCategories.map((category) => (
+                    {filteredCategories.map((category) => {
+                        const isCollapsed = searchTerm ? false : collapsedCategories[category.id];
+                        return (
                         <section key={category.id} className="animate-fade-in relative group/section">
-                        <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2">
+                        <div 
+                            className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2 cursor-pointer select-none hover:bg-slate-50 transition-colors rounded-t-lg px-2 pt-2"
+                            onClick={() => toggleCategory(category.id)}
+                        >
                             <div className="flex items-center gap-3">
+                            <div className="text-slate-400 hover:text-slate-600 transition-colors">
+                                {isCollapsed ? <Icons.ChevronRight className="w-5 h-5" /> : <Icons.ChevronDown className="w-5 h-5" />}
+                            </div>
                             <IconRenderer iconName={category.iconName} className="w-6 h-6 text-blue-600" />
                             <div>
                                 <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                 {category.title}
                                 {isEditMode && (
-                                    <button onClick={() => openEditCategoryModal(category)} className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-blue-600">
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); openEditCategoryModal(category); }} 
+                                        className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-blue-600"
+                                    >
                                     <Icons.Edit2 className="w-3 h-3" />
                                     </button>
                                 )}
@@ -465,7 +486,7 @@
                             </div>
                             {isEditMode && (
                             <button 
-                                onClick={() => handleDeleteCategory(category.id)}
+                                onClick={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}
                                 className="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded"
                             >
                                 <Icons.Trash2 className="w-4 h-4" />
@@ -473,7 +494,8 @@
                             )}
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {!isCollapsed && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 animate-fade-in">
                             {category.links && category.links.map((link, index) => (
                             <div key={index} className="relative group h-full">
                                 <a 
@@ -538,8 +560,10 @@
                             </button>
                             )}
                         </div>
+                        )}
                         </section>
-                    ))}
+                    );
+                    })}
 
                     {isEditMode && (
                         <button 
