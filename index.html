@@ -69,8 +69,9 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         
-        // DYNAMIC APP ID (Fixes permission errors in some environments)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- KEY FIX: MATCH ZAPIER EXACTLY ---
+        // We force this to 'default-app-id' because that is exactly where Zapier is writing the data.
+        const appId = 'default-app-id';
 
         // --- Icons (Inline SVGs) ---
         const Icons = {
@@ -273,7 +274,7 @@
             // Helper for Notifications
             const showNotification = (type, message) => {
                 setNotification({ type, message });
-                setTimeout(() => setNotification(null), 6000); // 6s duration
+                setTimeout(() => setNotification(null), 15000); // Increased to 15s
             };
 
             // Auth Listener
