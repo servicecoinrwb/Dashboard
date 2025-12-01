@@ -101,6 +101,7 @@
             CheckCircle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
             AlertTriangle: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>,
             Bell: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+            History: (props) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>,
         };
 
         const IconRenderer = ({ iconName, className }) => {
@@ -155,39 +156,57 @@
         ];
 
         // --- Notification Component ---
-        const Notification = ({ notification, onClose, onView }) => {
-            if (!notification) return null;
-            
-            const isSuccess = notification.type === 'success';
-            
-            return (
-                <div className="fixed bottom-6 right-6 z-[60] animate-fade-in-up max-w-sm w-full">
-                    <div className={`flex flex-col gap-3 px-5 py-4 rounded-xl shadow-2xl border ${isSuccess ? 'bg-white border-green-200' : 'bg-white border-blue-200'}`}>
-                        <div className="flex items-start gap-3">
-                            <div className={`p-2 rounded-full shrink-0 ${isSuccess ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                                {isSuccess ? <Icons.CheckCircle className="w-5 h-5" /> : <Icons.Bell className="w-5 h-5" />}
-                            </div>
-                            <div className="flex-grow">
-                                <h4 className={`font-bold text-sm ${isSuccess ? 'text-green-800' : 'text-blue-800'}`}>
-                                    {isSuccess ? 'Success' : 'New Notification'}
-                                </h4>
-                                <p className="text-slate-600 text-sm mt-0.5 line-clamp-2">{notification.message}</p>
-                            </div>
+        const Notification = ({ notification, onClose, onView, onHistory }) => {
+            // Helper to render the notification content
+            const renderContent = () => (
+                <div className={`flex flex-col gap-3 px-5 py-4 rounded-xl shadow-2xl border ${notification && notification.type === 'success' ? 'bg-white border-green-200' : 'bg-white border-blue-200'}`}>
+                    <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-full shrink-0 ${notification && notification.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                            {notification && notification.type === 'success' ? <Icons.CheckCircle className="w-5 h-5" /> : <Icons.Bell className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-grow">
+                            <h4 className={`font-bold text-sm ${notification && notification.type === 'success' ? 'text-green-800' : 'text-blue-800'}`}>
+                                {notification ? (notification.type === 'success' ? 'Success' : 'New Notification') : 'Notifications'}
+                            </h4>
+                            <p className="text-slate-600 text-sm mt-0.5 line-clamp-2">
+                                {notification ? notification.message : 'No new alerts'}
+                            </p>
+                        </div>
+                        {notification && (
                             <button 
                                 onClick={onClose} 
                                 className="text-slate-400 hover:text-slate-600 p-1"
                             >
                                 <Icons.X className="w-4 h-4" />
                             </button>
-                        </div>
-                        {/* View Button */}
+                        )}
+                    </div>
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                        {notification && (
+                            <button 
+                                onClick={onView}
+                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-colors ${notification.type === 'success' ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
+                            >
+                                View Details
+                            </button>
+                        )}
                         <button 
-                            onClick={onView}
-                            className={`w-full py-2 px-4 rounded-lg text-sm font-semibold transition-colors ${isSuccess ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
+                            onClick={onHistory}
+                            className="flex-shrink-0 py-2 px-3 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+                            title="View History"
                         >
-                            View Details
+                            <Icons.History className="w-4 h-4" />
+                            History
                         </button>
                     </div>
+                </div>
+            );
+
+            // Always render the container, but content changes if no notification
+            return (
+                <div className="fixed bottom-6 right-6 z-[60] animate-fade-in-up max-w-sm w-full">
+                    {renderContent()}
                 </div>
             );
         };
@@ -197,14 +216,14 @@
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up">
-                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-up max-h-[90vh] flex flex-col">
+                    <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0">
                     <h3 className="font-bold text-lg text-slate-800">{title}</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                         <Icons.X className="w-5 h-5" />
                     </button>
                     </div>
-                    <div className="p-6">
+                    <div className="p-6 overflow-y-auto">
                     {children}
                     </div>
                 </div>
@@ -272,6 +291,8 @@
             const [authChecking, setAuthChecking] = useState(true);
             const [notification, setNotification] = useState(null); 
             const [viewingAlert, setViewingAlert] = useState(false); // New state for alert modal
+            const [showHistory, setShowHistory] = useState(false); // State for history modal
+            const [alertHistory, setAlertHistory] = useState([]); // Store all alerts
 
             // Modal States
             const [modalType, setModalType] = useState(null); 
@@ -284,20 +305,21 @@
             // Helper for Notifications
             const showNotification = (type, message, id) => {
                 setNotification({ type, message, id });
-                // Removed setTimeout to make persistent as requested
             };
 
-            const handleAcknowledge = async () => {
-                if (notification?.id) {
-                    try {
-                        // Deletes the alert doc so it doesn't show up again
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'alerts', notification.id));
-                    } catch (e) {
-                        console.error("Error clearing alert:", e);
+            const handleAcknowledge = async (alertId) => {
+                if (!alertId) return;
+                try {
+                    // Deletes the alert doc so it doesn't show up again
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'alerts', alertId));
+                    // If we are viewing the main alert, close it
+                    if (notification && notification.id === alertId) {
+                        setViewingAlert(false);
+                        setNotification(null);
                     }
+                } catch (e) {
+                    console.error("Error clearing alert:", e);
                 }
-                setViewingAlert(false);
-                setNotification(null); // Clear the alert after acknowledgement
             };
 
             // Auth Listener
@@ -318,23 +340,32 @@
 
                 // Listen to the 'alerts' collection for new messages added by Zapier
                 const alertsRef = collection(db, 'artifacts', appId, 'public', 'data', 'alerts');
-                // We order by creation time to get the newest, limit to 1 to stay efficient
-                const q = query(alertsRef, orderBy('createdAt', 'desc'), limit(1));
+                // We order by creation time to get the newest
+                const q = query(alertsRef, orderBy('createdAt', 'desc'), limit(50)); // Fetch last 50 for history
 
                 const unsubscribe = onSnapshot(q, (snapshot) => {
-                    // REMOVED isFirstLoad check to allow persistent alerts on refresh
-                    snapshot.docChanges().forEach((change) => {
-                        // Only trigger if a NEW document is added
-                        if (change.type === "added") {
-                            const data = change.doc.data();
-                            console.log("New Alert Received:", data);
-                            showNotification(data.type || 'info', data.message || 'New notification received.', change.doc.id);
+                    const allAlerts = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    setAlertHistory(allAlerts);
+
+                    // Check for new unread alert (the most recent one)
+                    if (allAlerts.length > 0) {
+                        // In a real app we might track 'read' status, but here we just show the top one
+                        // if we aren't already showing one.
+                        const newest = allAlerts[0];
+                        // Simple logic: if notification is null, show the newest one
+                        if (!notification) {
+                             showNotification(newest.type || 'info', newest.message, newest.id);
                         }
-                    });
+                    } else {
+                        setNotification(null);
+                    }
                 });
 
                 return () => unsubscribe();
-            }, [user]);
+            }, [user, notification]); // Re-run if user or notification state changes slightly to check queue
 
             // Data Fetching & Seeding (Categories)
             useEffect(() => {
@@ -488,14 +519,15 @@
                 <Notification 
                     notification={notification} 
                     onClose={() => setNotification(null)} // Keeps "X" to dismiss without viewing
-                    onView={() => setViewingAlert(true)} // Opens modal
+                    onView={() => setViewingAlert(true)} // Opens details modal
+                    onHistory={() => setShowHistory(true)} // Opens history modal
                 />
 
-                {/* Alert Modal */}
+                {/* Alert Details Modal */}
                 <Modal
                     isOpen={viewingAlert}
                     onClose={() => setViewingAlert(false)}
-                    title="New Alert Details"
+                    title="Alert Details"
                 >
                     <div className="space-y-4">
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
@@ -505,13 +537,48 @@
                         </div>
                         <div className="flex justify-end">
                             <button
-                                onClick={handleAcknowledge}
+                                onClick={() => handleAcknowledge(notification?.id)}
                                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-colors"
                             >
                                 <Icons.CheckCircle className="w-5 h-5" />
                                 Acknowledge & Clear
                             </button>
                         </div>
+                    </div>
+                </Modal>
+
+                {/* Alert History Modal */}
+                <Modal
+                    isOpen={showHistory}
+                    onClose={() => setShowHistory(false)}
+                    title="Lead History"
+                >
+                    <div className="space-y-4">
+                        {alertHistory.length === 0 ? (
+                            <p className="text-center text-slate-500 py-4">No recent history.</p>
+                        ) : (
+                            alertHistory.map((alert) => (
+                                <div key={alert.id} className="bg-white border border-slate-200 rounded-lg p-3 shadow-sm flex flex-col gap-2">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex gap-2 items-center">
+                                            {alert.type === 'success' ? <div className="w-2 h-2 rounded-full bg-green-500"></div> : <div className="w-2 h-2 rounded-full bg-blue-500"></div>}
+                                            <span className="text-xs text-slate-400">
+                                                {/* Formatting timestamp if strictly a string or date object is complex without a library, using simple fallback */}
+                                                {alert.createdAt ? new Date(alert.createdAt).toLocaleString() : 'Recent'}
+                                            </span>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleAcknowledge(alert.id)}
+                                            className="text-slate-300 hover:text-red-500 transition-colors"
+                                            title="Delete"
+                                        >
+                                            <Icons.Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{alert.message}</p>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </Modal>
 
