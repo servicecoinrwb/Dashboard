@@ -282,12 +282,20 @@
             const [formData, setFormData] = useState({});
 
             // Helper for Notifications
-            const showNotification = (type, message) => {
-                setNotification({ type, message });
+            const showNotification = (type, message, id) => {
+                setNotification({ type, message, id });
                 // Removed setTimeout to make persistent as requested
             };
 
-            const handleAcknowledge = () => {
+            const handleAcknowledge = async () => {
+                if (notification?.id) {
+                    try {
+                        // Deletes the alert doc so it doesn't show up again
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'alerts', notification.id));
+                    } catch (e) {
+                        console.error("Error clearing alert:", e);
+                    }
+                }
                 setViewingAlert(false);
                 setNotification(null); // Clear the alert after acknowledgement
             };
@@ -313,22 +321,14 @@
                 // We order by creation time to get the newest, limit to 1 to stay efficient
                 const q = query(alertsRef, orderBy('createdAt', 'desc'), limit(1));
 
-                // We track if this is the first load to avoid showing old alerts
-                let isFirstLoad = true;
-
                 const unsubscribe = onSnapshot(q, (snapshot) => {
-                    // Skip the initial load of existing data
-                    if (isFirstLoad) {
-                        isFirstLoad = false;
-                        return;
-                    }
-
+                    // REMOVED isFirstLoad check to allow persistent alerts on refresh
                     snapshot.docChanges().forEach((change) => {
                         // Only trigger if a NEW document is added
                         if (change.type === "added") {
                             const data = change.doc.data();
                             console.log("New Alert Received:", data);
-                            showNotification(data.type || 'info', data.message || 'New notification received.');
+                            showNotification(data.type || 'info', data.message || 'New notification received.', change.doc.id);
                         }
                     });
                 });
