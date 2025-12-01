@@ -48,7 +48,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+        // Removed Analytics import to prevent 403 PERMISSION_DENIED errors
 
         const { useState, useEffect, useRef } = React;
 
@@ -59,12 +59,12 @@
             projectId: "dashboard-479319",
             storageBucket: "dashboard-479319.firebasestorage.app",
             messagingSenderId: "828361915368",
-            appId: "1:828361915368:web:bc0ba0e7549ed76e78825d",
-            measurementId: "G-L3ER0ST030"
+            appId: "1:828361915368:web:bc0ba0e7549ed76e78825d"
+            // Removed measurementId
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+        // Removed analytics initialization
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
