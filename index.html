@@ -155,28 +155,37 @@
         ];
 
         // --- Notification Component ---
-        const Notification = ({ notification, onClose }) => {
+        const Notification = ({ notification, onClose, onView }) => {
             if (!notification) return null;
             
             const isSuccess = notification.type === 'success';
             
             return (
-                <div className="fixed bottom-6 right-6 z-[60] animate-fade-in-up">
-                    <div className={`flex items-start gap-3 px-5 py-4 rounded-xl shadow-2xl border max-w-sm ${isSuccess ? 'bg-white border-green-200' : 'bg-white border-blue-200'}`}>
-                        <div className={`p-2 rounded-full shrink-0 ${isSuccess ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                            {isSuccess ? <Icons.CheckCircle className="w-5 h-5" /> : <Icons.Bell className="w-5 h-5" />}
+                <div className="fixed bottom-6 right-6 z-[60] animate-fade-in-up max-w-sm w-full">
+                    <div className={`flex flex-col gap-3 px-5 py-4 rounded-xl shadow-2xl border ${isSuccess ? 'bg-white border-green-200' : 'bg-white border-blue-200'}`}>
+                        <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-full shrink-0 ${isSuccess ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                                {isSuccess ? <Icons.CheckCircle className="w-5 h-5" /> : <Icons.Bell className="w-5 h-5" />}
+                            </div>
+                            <div className="flex-grow">
+                                <h4 className={`font-bold text-sm ${isSuccess ? 'text-green-800' : 'text-blue-800'}`}>
+                                    {isSuccess ? 'Success' : 'New Notification'}
+                                </h4>
+                                <p className="text-slate-600 text-sm mt-0.5 line-clamp-2">{notification.message}</p>
+                            </div>
+                            <button 
+                                onClick={onClose} 
+                                className="text-slate-400 hover:text-slate-600 p-1"
+                            >
+                                <Icons.X className="w-4 h-4" />
+                            </button>
                         </div>
-                        <div>
-                            <h4 className={`font-bold text-sm ${isSuccess ? 'text-green-800' : 'text-blue-800'}`}>
-                                {isSuccess ? 'Success' : 'New Notification'}
-                            </h4>
-                            <p className="text-slate-600 text-sm mt-0.5 leading-snug">{notification.message}</p>
-                        </div>
+                        {/* View Button */}
                         <button 
-                            onClick={onClose} 
-                            className="ml-2 text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 rounded shrink-0"
+                            onClick={onView}
+                            className={`w-full py-2 px-4 rounded-lg text-sm font-semibold transition-colors ${isSuccess ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}
                         >
-                            <Icons.X className="w-4 h-4" />
+                            View Details
                         </button>
                     </div>
                 </div>
@@ -262,6 +271,7 @@
             const [loading, setLoading] = useState(true);
             const [authChecking, setAuthChecking] = useState(true);
             const [notification, setNotification] = useState(null); 
+            const [viewingAlert, setViewingAlert] = useState(false); // New state for alert modal
 
             // Modal States
             const [modalType, setModalType] = useState(null); 
@@ -274,7 +284,12 @@
             // Helper for Notifications
             const showNotification = (type, message) => {
                 setNotification({ type, message });
-                setTimeout(() => setNotification(null), 15000); // Increased to 15s
+                // Removed setTimeout to make persistent as requested
+            };
+
+            const handleAcknowledge = () => {
+                setViewingAlert(false);
+                setNotification(null); // Clear the alert after acknowledgement
             };
 
             // Auth Listener
@@ -470,7 +485,35 @@
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
                 {/* Notification Toast */}
-                <Notification notification={notification} onClose={() => setNotification(null)} />
+                <Notification 
+                    notification={notification} 
+                    onClose={() => setNotification(null)} // Keeps "X" to dismiss without viewing
+                    onView={() => setViewingAlert(true)} // Opens modal
+                />
+
+                {/* Alert Modal */}
+                <Modal
+                    isOpen={viewingAlert}
+                    onClose={() => setViewingAlert(false)}
+                    title="New Alert Details"
+                >
+                    <div className="space-y-4">
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <p className="whitespace-pre-wrap text-slate-700 font-medium leading-relaxed">
+                                {notification?.message}
+                            </p>
+                        </div>
+                        <div className="flex justify-end">
+                            <button
+                                onClick={handleAcknowledge}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm transition-colors"
+                            >
+                                <Icons.CheckCircle className="w-5 h-5" />
+                                Acknowledge & Clear
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
 
                 {/* Navbar */}
                 <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
