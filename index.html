@@ -14,7 +14,7 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
     <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+   <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
 
     <style>
         @keyframes fade-in-up {
@@ -44,7 +44,7 @@
 
     <div id="root"></div>
 
-    <script type="text/babel" data-presets="react" data-type="module">
+    <script type="text/babel" data-type="module" data-presets="env,react">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
