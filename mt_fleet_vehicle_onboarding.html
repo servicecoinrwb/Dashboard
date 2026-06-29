@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT Fleet — Vehicle Onboarding</title>
+<style>
+  :root{
+    --navy:#16263f; --navy-deep:#0b2545;
+    --sky:#6fb7e3; --sky-deep:#5fa8d3;
+    --cream:#f5efe3; --paper:#fbf8f1;
+    --rust:#b5512f; --rust-bright:#c75146;
+    --ink:#1c1c1a; --line:#d8cfbd; --muted:#6a6358;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:"Helvetica Neue",Arial,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased;}
+  .sheet{max-width:860px;margin:0 auto;background:var(--paper);min-height:100vh;box-shadow:0 0 0 1px var(--line);}
+
+  header{background:var(--navy);color:var(--cream);padding:26px 34px 22px;border-bottom:5px solid var(--rust);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--sky);margin:0 0 8px;}
+  header h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.01em;line-height:1.05;}
+  header p{margin:8px 0 0;font-size:13.5px;color:#cdd8e6;max-width:58ch;}
+
+  .wrap{padding:26px 34px 40px;}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px;margin-bottom:22px;}
+  .panel > h2{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--rust);margin:0 0 4px;}
+  .panel > p.sub{margin:0 0 18px;font-size:13px;color:var(--muted);}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1 / -1;}
+  label{font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.01em;}
+  label .opt{font-weight:400;color:var(--muted);font-size:11px;}
+  input,select,textarea{font-family:var(--sans);font-size:14px;padding:9px 11px;border:1.5px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);width:100%;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--sky-deep);box-shadow:0 0 0 3px rgba(111,183,227,.3);}
+  textarea{resize:vertical;min-height:54px;}
+  .seg{display:flex;gap:0;border:1.5px solid var(--navy);border-radius:7px;overflow:hidden;}
+  .seg button{flex:1;border:none;background:#fff;color:var(--navy);font-family:var(--sans);font-size:13px;font-weight:600;padding:9px;cursor:pointer;transition:all .12s;}
+  .seg button.on{background:var(--navy);color:var(--cream);}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  .actions{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{border:none;border-radius:7px;font-family:var(--sans);font-size:13.5px;font-weight:700;padding:11px 20px;cursor:pointer;letter-spacing:.01em;transition:all .15s;}
+  .btn.primary{background:var(--rust);color:#fff;}
+  .btn.primary:hover{background:var(--rust-bright);}
+  .btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy);}
+  .btn.ghost:hover{background:var(--navy);color:var(--cream);}
+
+  /* setup output for the just-added / previewed vehicle */
+  .setup{margin-top:18px;border-top:1px dashed var(--line);padding-top:18px;display:none;}
+  .setup.show{display:block;}
+  .setup h3{margin:0 0 10px;font-size:14px;color:var(--navy);font-weight:800;}
+  .kv{display:grid;gap:8px;margin-bottom:14px;}
+  .kv .row{display:flex;align-items:center;gap:10px;background:var(--cream);border:1px solid var(--line);border-radius:6px;padding:8px 11px;}
+  .kv .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);min-width:130px;font-weight:600;}
+  .kv .v{font-family:var(--mono);font-size:14px;color:var(--navy-deep);flex:1;word-break:break-all;font-weight:600;}
+  .copy{border:1px solid var(--rust);background:transparent;color:var(--rust);font-family:var(--mono);font-size:10px;letter-spacing:.06em;padding:5px 9px;border-radius:5px;cursor:pointer;text-transform:uppercase;white-space:nowrap;}
+  .copy:hover,.copy.done{background:var(--rust);color:#fff;}
+  ol.steps{margin:0;padding-left:20px;}
+  ol.steps li{font-size:13.5px;margin-bottom:7px;}
+  ol.steps li code{font-family:var(--mono);font-size:12.5px;background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:1px 6px;word-break:break-all;}
+  .flag{background:#fff5f0;border:1px solid var(--rust);border-radius:8px;padding:12px 15px;margin-top:14px;font-size:13px;color:#5c554a;}
+  .flag b{color:var(--rust);}
+
+  /* fleet list */
+  .fleet h2{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy);margin:0 0 14px;}
+  .veh{border:1px solid var(--line);border-radius:9px;padding:14px 16px;margin-bottom:11px;background:#fff;}
+  .veh-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .veh-top .name{font-size:15px;font-weight:800;color:var(--navy);}
+  .veh-top .badge{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:20px;}
+  .badge.phone{background:rgba(111,183,227,.2);color:var(--sky-deep);}
+  .badge.hw{background:rgba(181,81,47,.15);color:var(--rust);}
+  .veh-top .rm{margin-left:auto;border:none;background:transparent;color:var(--rust);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;}
+  .veh-meta{margin-top:8px;display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);}
+  .veh-meta b{color:var(--ink);font-weight:600;}
+  .veh-meta code{font-family:var(--mono);font-size:12px;color:var(--navy-deep);}
+  .empty{font-size:13.5px;color:var(--muted);font-style:italic;padding:8px 2px;}
+
+  .export-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center;}
+  .export-bar .note{font-size:12px;color:var(--muted);flex:1;min-width:200px;}
+
+  footer{background:var(--navy);color:#9fb3c9;padding:16px 34px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  footer b{color:var(--cream);}
+
+  @media (max-width:600px){
+    header,.wrap{padding-left:18px;padding-right:18px;}
+    .grid{grid-template-columns:1fr;}
+    .kv .k{min-width:0;width:100%;}
+    .kv .row{flex-wrap:wrap;}
+    header h1{font-size:24px;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header>
+    <p class="eyebrow">Mechanical Temp · Fleet Ops</p>
+    <h1>Add a Vehicle</h1>
+    <p>Build a profile for each truck, generate its tracker setup, and export the fleet as JSON you can keep or load into DSM later. Phone and hardware trackers are handled differently — pick the right one.</p>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ADD FORM -->
+    <div class="panel">
+      <h2>Vehicle profile</h2>
+      <p class="sub">Fill what you have. Only the name and tracker type are required to generate a setup.</p>
+
+      <div class="grid">
+        <div class="field full">
+          <label>Vehicle label *</label>
+          <input id="f-label" type="text" placeholder="e.g. Truck 1 — 2019 F-250" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label>Assigned to <span class="opt">(tech)</span></label>
+          <input id="f-tech" type="text" placeholder="e.g. Jason" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Tracker type *</label>
+          <div class="seg" id="f-type">
+            <button type="button" data-type="phone" class="on">Phone app</button>
+            <button type="button" data-type="hw">Hardware (FMB920)</button>
+          </div>
+        </div>
+
+        <div class="field" id="imei-field" style="display:none;">
+          <label>Tracker IMEI *</label>
+          <input id="f-imei" type="text" inputmode="numeric" placeholder="15-digit number on the device" autocomplete="off">
+          <span class="hint">Hardware trackers identify by IMEI — it's printed on the unit.</span>
+        </div>
+
+        <div class="field">
+          <label>License plate <span class="opt">(optional)</span></label>
+          <input id="f-plate" type="text" placeholder="e.g. ABC 1234" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>VIN <span class="opt">(optional)</span></label>
+          <input id="f-vin" type="text" placeholder="optional" autocomplete="off">
+        </div>
+
+        <div class="field">
+          <label>In service since <span class="opt">(optional)</span></label>
+          <input id="f-date" type="date">
+        </div>
+        <div class="field">
+          <label>Oil change every <span class="opt">(miles)</span></label>
+          <input id="f-oil" type="number" placeholder="e.g. 5000">
+        </div>
+
+        <div class="field">
+          <label>Registration expires <span class="opt">(optional)</span></label>
+          <input id="f-reg" type="date">
+        </div>
+        <div class="field">
+          <label>Insurance expires <span class="opt">(optional)</span></label>
+          <input id="f-ins" type="date">
+        </div>
+
+        <div class="field full">
+          <label>Notes <span class="opt">(optional)</span></label>
+          <textarea id="f-notes" placeholder="anything worth remembering about this truck"></textarea>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="add">Add vehicle &amp; show setup</button>
+        <button class="btn ghost" id="clear">Clear form</button>
+      </div>
+
+      <!-- generated setup -->
+      <div class="setup" id="setup">
+        <h3 id="setup-title">Setup</h3>
+        <div class="kv" id="setup-kv"></div>
+        <ol class="steps" id="setup-steps"></ol>
+        <div id="setup-flag"></div>
+      </div>
+    </div>
+
+    <!-- FLEET LIST -->
+    <div class="panel fleet">
+      <h2>Fleet roster</h2>
+      <div id="fleet-list"><p class="empty">No vehicles yet. Add one above.</p></div>
+      <div class="export-bar">
+        <button class="btn ghost" id="export">Export fleet (JSON)</button>
+        <button class="btn ghost" id="import-btn">Import JSON</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none;">
+        <span class="note">Export keeps your fleet safe and is ready to load into a DSM table when you wire it in.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>MECHANICAL TEMP LLC · LIC 7117025</span>
+    <span>TRACCAR · <b>DSM</b></span>
+  </footer>
+
+</div>
+
+<script>
+  var SERVER = "https://gps.digitalsecretarymachine.com";
+  var fleet = [];
+  var trackerType = "phone";
+
+  // ---- type toggle ----
+  document.querySelectorAll("#f-type button").forEach(function(b){
+    b.addEventListener("click",function(){
+      document.querySelectorAll("#f-type button").forEach(function(x){x.classList.remove("on");});
+      b.classList.add("on");
+      trackerType = b.dataset.type;
+      document.getElementById("imei-field").style.display = (trackerType==="hw") ? "flex" : "none";
+    });
+  });
+
+  // ---- helpers ----
+  function slug(s){return (s||"").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
+  function randTail(){var c="abcdefghijkmnpqrstuvwxyz23456789",o="";for(var i=0;i<6;i++)o+=c[Math.floor(Math.random()*c.length)];return o;}
+  function cap(s){return s?s.charAt(0).toUpperCase()+s.slice(1):s;}
+  function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function flashBtn(btn){var t=btn.textContent;btn.textContent="Copied";btn.classList.add("done");setTimeout(function(){btn.textContent=t;btn.classList.remove("done");},1000);}
+
+  function bindCopies(scope){
+    scope.querySelectorAll(".copy").forEach(function(btn){
+      btn.onclick=function(){
+        var v=btn.dataset.copy || (btn.previousElementSibling && btn.previousElementSibling.textContent);
+        navigator.clipboard && navigator.clipboard.writeText(v).then(function(){flashBtn(btn);},function(){flashBtn(btn);});
+      };
+    });
+  }
+
+  // ---- add ----
+  document.getElementById("add").addEventListener("click",function(){
+    var label=document.getElementById("f-label").value.trim();
+    if(!label){alert("Give the vehicle a label first.");return;}
+    var imei=document.getElementById("f-imei").value.trim();
+    if(trackerType==="hw" && !/^\d{15}$/.test(imei)){alert("Hardware trackers need a 15-digit IMEI.");return;}
+
+    var tech=document.getElementById("f-tech").value.trim();
+    var identifier = (trackerType==="hw")
+      ? imei
+      : (slug(tech||label.split(/[ —-]/)[0]||"truck") + "-" + randTail());
+
+    var v={
+      label:label,
+      tech:tech,
+      tracker_type:trackerType,
+      identifier:identifier,
+      plate:document.getElementById("f-plate").value.trim(),
+      vin:document.getElementById("f-vin").value.trim(),
+      in_service:document.getElementById("f-date").value,
+      oil_change_miles:document.getElementById("f-oil").value,
+      registration_expires:document.getElementById("f-reg").value,
+      insurance_expires:document.getElementById("f-ins").value,
+      notes:document.getElementById("f-notes").value.trim(),
+      added:new Date().toISOString().slice(0,10)
+    };
+    fleet.push(v);
+    renderFleet();
+    showSetup(v);
+    // reset only the per-vehicle fields, keep type
+    ["f-label","f-tech","f-imei","f-plate","f-vin","f-oil","f-notes"].forEach(function(id){document.getElementById(id).value="";});
+    document.getElementById("setup").scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+
+  document.getElementById("clear").addEventListener("click",function(){
+    ["f-label","f-tech","f-imei","f-plate","f-vin","f-oil","f-notes","f-date","f-reg","f-ins"].forEach(function(id){document.getElementById(id).value="";});
+    document.getElementById("setup").classList.remove("show");
+  });
+
+  // ---- setup output ----
+  function showSetup(v){
+    var box=document.getElementById("setup");
+    var kv=document.getElementById("setup-kv");
+    var steps=document.getElementById("setup-steps");
+    var flag=document.getElementById("setup-flag");
+    document.getElementById("setup-title").textContent = "Setup — " + v.label;
+
+    kv.innerHTML =
+      row("Traccar name", v.label) +
+      row("Identifier", v.identifier);
+
+    if(v.tracker_type==="phone"){
+      kv.innerHTML += row("Server URL", SERVER);
+      steps.innerHTML =
+        "<li>In the Traccar dashboard, click <code>+</code> and add a device. Name: <code>"+esc(v.label)+"</code>, Identifier: <code>"+esc(v.identifier)+"</code>.</li>"+
+        "<li>On the phone, install <b>Traccar Client</b> and allow location <b>Always</b>.</li>"+
+        "<li>Change settings → Server URL <code>"+SERVER+"</code>, Device identifier <code>"+esc(v.identifier)+"</code>.</li>"+
+        "<li>Set Frequency <code>300</code>, Distance <code>100</code>, Angle <code>45</code> (battery-friendly).</li>"+
+        "<li>Turn Continuous tracking ON. Test on cellular with WiFi off.</li>";
+      flag.innerHTML = "";
+    } else {
+      kv.innerHTML += row("Server (host)", "gps.digitalsecretarymachine.com") + row("Port", "5027");
+      steps.innerHTML =
+        "<li>In the Traccar dashboard, add a device. Name: <code>"+esc(v.label)+"</code>, Identifier: <code>"+esc(v.identifier)+"</code> (the IMEI).</li>"+
+        "<li>Hardwire the FMB920 to constant power + ignition under the dash.</li>"+
+        "<li>With Teltonika Configurator (USB) or FOTA, set the carrier APN.</li>"+
+        "<li>Set the server to the Pi's reachable address on port <code>5027</code> (Teltonika protocol), TCP.</li>"+
+        "<li>Confirm the device reports in the dashboard, then hide the wiring.</li>";
+      flag.innerHTML = "<div class='flag'><b>One open decision before this works.</b> The FMB920 speaks raw TCP on port 5027 — your Cloudflare tunnel only carries HTTP, so it can't route this. You'll need to port-forward 5027 on the router, use a small VPS, or Cloudflare Spectrum. Sort this with Claude before buying hardware.</div>";
+    }
+    box.classList.add("show");
+    bindCopies(box);
+  }
+  function row(k,val){
+    return "<div class='row'><span class='k'>"+esc(k)+"</span><span class='v'>"+esc(val)+"</span><button class='copy' data-copy='"+esc(val)+"'>Copy</button></div>";
+  }
+
+  // ---- fleet render ----
+  function renderFleet(){
+    var list=document.getElementById("fleet-list");
+    if(!fleet.length){list.innerHTML="<p class='empty'>No vehicles yet. Add one above.</p>";return;}
+    list.innerHTML = fleet.map(function(v,i){
+      var badge = v.tracker_type==="hw"
+        ? "<span class='badge hw'>FMB920</span>"
+        : "<span class='badge phone'>Phone</span>";
+      var meta=[];
+      if(v.tech) meta.push("<span><b>Tech:</b> "+esc(v.tech)+"</span>");
+      meta.push("<span><b>ID:</b> <code>"+esc(v.identifier)+"</code></span>");
+      if(v.plate) meta.push("<span><b>Plate:</b> "+esc(v.plate)+"</span>");
+      if(v.oil_change_miles) meta.push("<span><b>Oil:</b> every "+esc(v.oil_change_miles)+" mi</span>");
+      if(v.registration_expires) meta.push("<span><b>Reg:</b> "+esc(v.registration_expires)+"</span>");
+      if(v.insurance_expires) meta.push("<span><b>Ins:</b> "+esc(v.insurance_expires)+"</span>");
+      return "<div class='veh'><div class='veh-top'><span class='name'>"+esc(v.label)+"</span>"+badge+
+        "<button class='rm' data-i='"+i+"' title='Remove'>&times;</button></div>"+
+        "<div class='veh-meta'>"+meta.join("")+"</div></div>";
+    }).join("");
+    list.querySelectorAll(".rm").forEach(function(b){
+      b.onclick=function(){fleet.splice(+b.dataset.i,1);renderFleet();};
+    });
+  }
+
+  // ---- export / import ----
+  document.getElementById("export").addEventListener("click",function(){
+    if(!fleet.length){alert("Add a vehicle first.");return;}
+    var data=JSON.stringify({exported:new Date().toISOString(),fleet:fleet},null,2);
+    var blob=new Blob([data],{type:"application/json"});
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="mt_fleet_"+new Date().toISOString().slice(0,10)+".json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById("import-btn").addEventListener("click",function(){document.getElementById("import-file").click();});
+  document.getElementById("import-file").addEventListener("change",function(e){
+    var file=e.target.files[0]; if(!file) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var obj=JSON.parse(r.result);
+        var arr=Array.isArray(obj)?obj:obj.fleet;
+        if(!Array.isArray(arr)) throw new Error();
+        fleet=arr; renderFleet();
+      }catch(_){alert("That file doesn't look like a fleet export.");}
+    };
+    r.readAsText(file);
+    e.target.value="";
+  });
+</script>
+</body>
+</html>
