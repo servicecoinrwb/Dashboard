@@ -72,10 +72,11 @@
 </head>
 <body>
 <div id="bar">
-  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v12</span></span>
+  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v13</span></span>
   <div class="grp">
     <label class="file" for="pdfInput">📂 Open PDF</label>
     <input type="file" id="pdfInput" accept="application/pdf">
+    <input type="file" id="imgInput" accept="image/*">
   </div>
   <div class="grp" id="toolGrp">
     <button class="tool on" data-tool="select">↖ Select</button>
@@ -84,6 +85,7 @@
     <button class="tool" data-tool="x">✕ X</button>
     <button class="tool" data-tool="date">📅 Date</button>
     <button class="tool" data-tool="sign">✍ Signature</button>
+    <button class="tool" data-tool="image">🖼 Image</button>
   </div>
   <div class="grp">
     <span style="font-size:12px;opacity:.7">Size</span>
@@ -95,6 +97,7 @@
     <span class="swatch" data-color="0.71,0.32,0.18" style="background:#b5512f"></span>
   </div>
   <div class="grp">
+    <button class="act" id="clearAll">🧹 Clear all</button>
     <button class="act primary" id="download">⤓ Download PDF</button>
   </div>
   <span id="hint">Pick a tool, then click on the page to place.</span>
@@ -150,7 +153,7 @@
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-console.log("%cFill & Sign v12 loaded","color:#6fb7e3;font-weight:bold");
+console.log("%cFill & Sign v13 loaded","color:#6fb7e3;font-weight:bold");
 const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 let srcBytes=null, pageScales=[], pageEls=[], annotations=[];
@@ -166,6 +169,7 @@ document.querySelectorAll(".tool").forEach(b=>{ b.onclick=()=>{
   const t=b.dataset.tool;
   if(t==="text"){ openText(null); return; }
   if(t==="sign"){ openSig(); return; }
+  if(t==="image"){ document.getElementById("imgInput").click(); return; }
   setTool(t);
 }; });
 function setTool(t){
@@ -217,6 +221,25 @@ txtInput.addEventListener("keydown",e=>{ if(e.key==="Enter" && (e.ctrlKey||e.met
 
 /* ---------- file load ---------- */
 document.getElementById("pdfInput").onchange=e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); };
+// drop an image (logo, photo, scanned signature) — converted to PNG, placed like a signature
+document.getElementById("imgInput").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ const im=new Image(); im.onload=()=>{
+      const c=document.createElement("canvas"); c.width=im.naturalWidth||im.width; c.height=im.naturalHeight||im.height;
+      c.getContext("2d").drawImage(im,0,0);
+      pending={type:"sig",img:c.toDataURL("image/png")};
+      if(!srcBytes){ alert("Open a PDF first, then place the image."); pending=null; return; }
+      setTool("placesig");
+    }; im.src=rd.result; };
+  rd.readAsDataURL(f); e.target.value="";
+};
+document.getElementById("clearAll").onclick=()=>{
+  if(!annotations.length) return;
+  if(confirm("Remove everything you've placed on the form? (The PDF itself stays.)")){
+    annotations.slice().forEach(removeAnn); select(null);
+  }
+};
 const drop=document.getElementById("drop");
 drop.onclick=()=>document.getElementById("pdfInput").click();
 ["dragenter","dragover"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hot");}));
