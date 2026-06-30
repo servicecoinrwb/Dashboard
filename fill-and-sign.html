@@ -46,8 +46,8 @@
   .overlay{position:absolute;inset:0}
   .overlay.place{cursor:crosshair}
   .ann{position:absolute;z-index:5}
-  .ann.text{min-width:8px;min-height:1em;padding:1px 2px;outline:none;white-space:pre;cursor:text;
-    border:1px dashed transparent}
+  .ann.text{display:inline-block;min-width:6px;min-height:1em;padding:1px 2px;outline:none;white-space:pre;
+    cursor:text;color:#111;-webkit-text-fill-color:#111;caret-color:#111;border:1px dashed transparent}
   .ann.text:focus{border-color:var(--sky);background:rgba(111,183,227,.08)}
   .ann.stamp{cursor:move}
   .ann.sel{border:1px dashed var(--rust)!important;box-shadow:0 0 0 1px rgba(181,81,47,.3)}
@@ -317,8 +317,12 @@ function stampSVG(a){
 
 function applyTextStyle(a){
   const c="rgb("+a.color.split(",").map(x=>Math.round(+x*255)).join(",")+")";
-  a.el.style.color=c;
-  a.el.style.font=(a.fontFamily?("400 "+a.fontPx+"px "+a.fontFamily):(a.fontPx+"px Helvetica,Arial,sans-serif"));
+  a.el.style.setProperty("color",c,"important");
+  a.el.style.setProperty("-webkit-text-fill-color",c,"important");
+  a.el.style.setProperty("caret-color",c,"important");
+  a.el.style.fontFamily=a.fontFamily||"Helvetica,Arial,sans-serif";
+  a.el.style.fontWeight="400";
+  a.el.style.fontSize=a.fontPx+"px";
   a.el.style.lineHeight=a.fontPx+"px";
 }
 
