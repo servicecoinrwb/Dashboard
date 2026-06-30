@@ -355,12 +355,17 @@ function applyTextStyle(a){
 
 function removeAnn(a){ a.el.remove(); annotations=annotations.filter(x=>x!==a); if(selected===a) selected=null; if(lastText===a) lastText=null; }
 
+function removeEmptyTextBoxes(except){
+  annotations.filter(x=>x.kind==="text" && x!==except && !(x.text&&x.text.trim()))
+    .slice().forEach(x=>removeAnn(x));
+}
 function select(a){
   if(selected) selected.el.classList.remove("sel");
   selected=a;
   if(a){ a.el.classList.add("sel");
     if(a.kind==="text"){ lastText=a; document.getElementById("fontSize").value=a.fontPx; showFmt(a); }
     else hideFmt();
+    removeEmptyTextBoxes(a);
   } else hideFmt();
 }
 
