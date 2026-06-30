@@ -88,7 +88,7 @@
 </head>
 <body>
 <div id="bar">
-  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign</span>
+  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v7</span></span>
   <div class="grp">
     <label class="file" for="pdfInput">📂 Open PDF</label>
     <input type="file" id="pdfInput" accept="application/pdf">
@@ -156,6 +156,7 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+console.log("%cFill & Sign v7 loaded","color:#6fb7e3;font-weight:bold");
 const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 let srcBytes = null;          // original PDF bytes (ArrayBuffer copy)
