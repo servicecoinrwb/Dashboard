@@ -266,8 +266,8 @@ function addAnn(a){
   a.id=++uid;
   annotations.push(a);
   drawAnn(a);
-  if(tool!=="text" && tool!=="date") setTool("select");
-  if(a.kind==="text"){ setTimeout(()=>{ a.el.focus(); },0); }
+  if(a.kind==="text"){ setTimeout(()=>{ a.el.focus(); select(a); },0); }
+  setTool("select");
   return a;
 }
 
@@ -286,10 +286,18 @@ function drawAnn(a){
     applyTextStyle(a);
     el.addEventListener("input",()=>{ a.text=el.textContent; });
     el.addEventListener("focus",()=>select(a));
-    el.addEventListener("blur",()=>{ a.text=el.textContent; });
+    el.addEventListener("blur",()=>{ a.text=el.textContent; if(!a.text.trim()) removeAnn(a); });
   }else{
     el.style.width=a.w+"px"; el.style.height=a.h+"px";
-    el.appendChild(stampSVG(a));
+    if(a.kind==="image"){
+      const im=document.createElement("img");
+      im.src=a.img;
+      im.style.width="100%"; im.style.height="100%";
+      im.style.display="block"; im.style.pointerEvents="none";
+      el.appendChild(im);
+    }else{
+      el.appendChild(stampSVG(a));
+    }
     enableDrag(el,a);
     const rsz=document.createElement("div"); rsz.className="rsz";
     enableResize(rsz,a);
@@ -305,7 +313,8 @@ function stampSVG(a){
   const svg=document.createElementNS(ns,"svg");
   svg.setAttribute("viewBox","0 0 24 24"); svg.style.width="100%"; svg.style.height="100%";
   svg.style.display="block"; svg.style.pointerEvents="none";
-  const stroke="rgb("+a.color.split(",").map(c=>Math.round(+c*255)).join(",")+")";
+  const col=a.color||"0,0,0";
+  const stroke="rgb("+col.split(",").map(c=>Math.round(+c*255)).join(",")+")";
   const mk=d=>{const p=document.createElementNS(ns,"path");p.setAttribute("d",d);
     p.setAttribute("stroke",stroke);p.setAttribute("stroke-width","2.6");
     p.setAttribute("fill","none");p.setAttribute("stroke-linecap","round");
@@ -482,7 +491,7 @@ async function exportPdf(){
     for(const a of annotations){
       const page=pages[a.page]; if(!page) continue;
       const S=pageScales[a.page]; const ph=page.getHeight();
-      const col=rgb(...a.color.split(",").map(Number));
+      const col=rgb(...(a.color||"0,0,0").split(",").map(Number));
       if(a.kind==="text"){
         const text=(a.text||"").replace(/\n/g," ");
         if(!text) continue;
