@@ -60,6 +60,17 @@
   .ann .rsz{position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;border-radius:3px;
     background:var(--sky);border:1px solid #fff;cursor:nwse-resize;display:none;z-index:9}
   .ann.stamp.sel .rsz{display:block}
+  /* floating per-box toolbar */
+  #fmt{position:fixed;display:none;z-index:60;background:var(--navy);border-radius:9px;padding:3px;
+    gap:2px;align-items:center;box-shadow:0 4px 14px rgba(0,0,0,.45);transform:translateY(-100%)}
+  #fmt.show{display:flex}
+  #fmt button{background:rgba(255,255,255,.14);color:#fff;border:none;border-radius:6px;height:26px;
+    min-width:30px;padding:0 7px;cursor:pointer;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center}
+  #fmt button:hover{background:rgba(255,255,255,.28)}
+  #fmt .mv{cursor:move}
+  #fmt .sz{color:#fff;font-size:12px;min-width:26px;text-align:center;font-variant-numeric:tabular-nums}
+  #fmt .rm{background:var(--rust)}
+  #fmt .rm:hover{background:#cf5d38}
   /* signature modal */
   #modal{position:fixed;inset:0;background:rgba(8,12,18,.6);display:none;align-items:center;justify-content:center;z-index:100}
   #modal .card{background:#fff;border-radius:14px;width:min(560px,92vw);padding:18px 18px 16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
@@ -88,7 +99,7 @@
 </head>
 <body>
 <div id="bar">
-  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v7</span></span>
+  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v8</span></span>
   <div class="grp">
     <label class="file" for="pdfInput">📂 Open PDF</label>
     <input type="file" id="pdfInput" accept="application/pdf">
@@ -156,7 +167,7 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-console.log("%cFill & Sign v7 loaded","color:#6fb7e3;font-weight:bold");
+console.log("%cFill & Sign v8 loaded","color:#6fb7e3;font-weight:bold");
 const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 let srcBytes = null;          // original PDF bytes (ArrayBuffer copy)
@@ -200,7 +211,8 @@ document.querySelectorAll(".swatch").forEach(s=>{
 document.getElementById("fontSize").oninput=e=>{
   fontPx=Math.max(6,Math.min(72,+e.target.value||13));
   let t=(selected&&selected.kind==="text")?selected:lastText;
-  if(t && annotations.includes(t)){ t.fontPx=fontPx; applyTextStyle(t); }
+  if(t && annotations.includes(t)){ t.fontPx=fontPx; applyTextStyle(t);
+    if(typeof fmt!=="undefined" && fmtTarget===t){ fmt.querySelector(".sz").textContent=t.fontPx; showFmt(t); } }
 };
 
 /* ---------- file load ---------- */
@@ -347,10 +359,55 @@ function select(a){
   if(selected) selected.el.classList.remove("sel");
   selected=a;
   if(a){ a.el.classList.add("sel");
-    if(a.kind==="text"){ lastText=a; document.getElementById("fontSize").value=a.fontPx; } }
+    if(a.kind==="text"){ lastText=a; document.getElementById("fontSize").value=a.fontPx; showFmt(a); }
+    else hideFmt();
+  } else hideFmt();
 }
+
+/* ----- floating per-box toolbar ----- */
+const fmt=document.createElement("div"); fmt.id="fmt";
+fmt.innerHTML='<button class="mv" title="Move">✥</button>'+
+  '<button class="minus" title="Smaller">A−</button>'+
+  '<span class="sz">13</span>'+
+  '<button class="plus" title="Bigger">A+</button>'+
+  '<button class="rm" title="Delete">🗑</button>';
+document.body.appendChild(fmt);
+let fmtTarget=null;
+function showFmt(a){
+  fmtTarget=a;
+  const r=a.el.getBoundingClientRect();
+  fmt.style.left=r.left+"px";
+  fmt.style.top=(r.top-6)+"px";
+  fmt.querySelector(".sz").textContent=a.fontPx;
+  fmt.classList.add("show");
+}
+function hideFmt(){ fmt.classList.remove("show"); fmtTarget=null; }
+function bumpSize(d){
+  if(!fmtTarget) return;
+  fmtTarget.fontPx=Math.max(6,Math.min(72,fmtTarget.fontPx+d));
+  applyTextStyle(fmtTarget);
+  fontPx=fmtTarget.fontPx;
+  fmt.querySelector(".sz").textContent=fmtTarget.fontPx;
+  document.getElementById("fontSize").value=fmtTarget.fontPx;
+  showFmt(fmtTarget);
+}
+fmt.querySelector(".minus").onclick=()=>bumpSize(-1);
+fmt.querySelector(".plus").onclick=()=>bumpSize(1);
+fmt.querySelector(".rm").onclick=()=>{ if(fmtTarget){ removeAnn(fmtTarget); hideFmt(); } };
+(function(){
+  const mv=fmt.querySelector(".mv"); let md=false,sx,sy,ox,oy;
+  mv.addEventListener("pointerdown",e=>{ if(!fmtTarget)return; md=true; mv.setPointerCapture(e.pointerId);
+    sx=e.clientX;sy=e.clientY;ox=fmtTarget.x;oy=fmtTarget.y; e.preventDefault(); });
+  mv.addEventListener("pointermove",e=>{ if(!md)return;
+    fmtTarget.x=ox+(e.clientX-sx); fmtTarget.y=oy+(e.clientY-sy);
+    fmtTarget.el.style.left=fmtTarget.x+"px"; fmtTarget.el.style.top=fmtTarget.y+"px";
+    showFmt(fmtTarget); });
+  mv.addEventListener("pointerup",()=>md=false);
+})();
+stage.addEventListener("scroll",()=>{ if(fmtTarget) showFmt(fmtTarget); });
 document.addEventListener("pointerdown",e=>{
   if(e.target.closest("#bar")) return;
+  if(e.target.closest("#fmt")) return;
   if(!e.target.closest(".ann")) select(null);
 });
 document.addEventListener("keydown",e=>{
