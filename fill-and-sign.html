@@ -46,14 +46,17 @@
   .overlay{position:absolute;inset:0}
   .overlay.place{cursor:crosshair}
   .ann{position:absolute;z-index:5}
-  .ann.text{display:inline-block;min-width:6px;min-height:1em;padding:1px 2px;outline:none;white-space:pre;
-    cursor:text;color:#111;-webkit-text-fill-color:#111;caret-color:#111;border:1px dashed transparent}
-  .ann.text:focus{border-color:var(--sky);background:rgba(111,183,227,.08)}
+  .ann.text{display:inline-block;min-width:14px;min-height:1em;padding:0 2px;outline:none;white-space:pre;
+    cursor:text;color:#111;-webkit-text-fill-color:#111;caret-color:#111;border-radius:3px;
+    box-shadow:0 0 0 1px transparent}
+  .ann.text:empty{box-shadow:0 0 0 1px rgba(111,183,227,.6);min-width:34px}
+  .ann.text:focus{box-shadow:0 0 0 1px var(--sky);background:rgba(111,183,227,.10)}
   .ann.stamp{cursor:move}
-  .ann.sel{border:1px dashed var(--rust)!important;box-shadow:0 0 0 1px rgba(181,81,47,.3)}
-  .ann .del{position:absolute;top:-11px;right:-11px;width:20px;height:20px;border-radius:50%;
-    background:var(--rust);color:#fff;border:none;font-size:13px;line-height:20px;cursor:pointer;display:none;padding:0;z-index:9}
-  .ann.sel .del,.ann:hover .del{display:block}
+  .ann.sel{box-shadow:0 0 0 1.5px var(--sky)!important;border-radius:3px}
+  .ann .del{position:absolute;top:-12px;right:-12px;width:18px;height:18px;border-radius:50%;
+    background:var(--rust);color:#fff;border:2px solid #fff;font-size:11px;line-height:1;cursor:pointer;
+    display:none;align-items:center;justify-content:center;padding:0;z-index:9;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+  .ann:hover .del,.ann.sel .del{display:flex}
   .ann .rsz{position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;border-radius:3px;
     background:var(--sky);border:1px solid #fff;cursor:nwse-resize;display:none;z-index:9}
   .ann.stamp.sel .rsz{display:block}
@@ -163,6 +166,7 @@ let tool = "select";
 let color = "0,0,0";
 let fontPx = 13;
 let selected = null;
+let lastText = null;          // most recent text box, for the size control
 let pendingSig = null;        // dataURL waiting to be placed
 let uid = 0;
 
@@ -194,7 +198,8 @@ document.querySelectorAll(".swatch").forEach(s=>{
 });
 document.getElementById("fontSize").oninput=e=>{
   fontPx=Math.max(6,Math.min(72,+e.target.value||13));
-  if(selected && selected.kind==="text"){ selected.fontPx=fontPx; applyTextStyle(selected); }
+  let t=(selected&&selected.kind==="text")?selected:lastText;
+  if(t && annotations.includes(t)){ t.fontPx=fontPx; applyTextStyle(t); }
 };
 
 /* ---------- file load ---------- */
@@ -286,7 +291,7 @@ function drawAnn(a){
     applyTextStyle(a);
     el.addEventListener("input",()=>{ a.text=el.textContent; });
     el.addEventListener("focus",()=>select(a));
-    el.addEventListener("blur",()=>{ a.text=el.textContent; if(!a.text.trim()) removeAnn(a); });
+    el.addEventListener("blur",()=>{ a.text=el.textContent; });
   }else{
     el.style.width=a.w+"px"; el.style.height=a.h+"px";
     if(a.kind==="image"){
@@ -335,15 +340,16 @@ function applyTextStyle(a){
   a.el.style.lineHeight=a.fontPx+"px";
 }
 
-function removeAnn(a){ a.el.remove(); annotations=annotations.filter(x=>x!==a); if(selected===a) selected=null; }
+function removeAnn(a){ a.el.remove(); annotations=annotations.filter(x=>x!==a); if(selected===a) selected=null; if(lastText===a) lastText=null; }
 
 function select(a){
   if(selected) selected.el.classList.remove("sel");
   selected=a;
   if(a){ a.el.classList.add("sel");
-    if(a.kind==="text"){ document.getElementById("fontSize").value=a.fontPx; } }
+    if(a.kind==="text"){ lastText=a; document.getElementById("fontSize").value=a.fontPx; } }
 }
 document.addEventListener("pointerdown",e=>{
+  if(e.target.closest("#bar")) return;
   if(!e.target.closest(".ann")) select(null);
 });
 document.addEventListener("keydown",e=>{
