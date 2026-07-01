@@ -72,6 +72,19 @@
   .modal button.m{padding:11px 16px;border-radius:9px;border:1px solid var(--line);background:#f1efe9;cursor:pointer;font-size:14px}
   .modal button.m.primary{background:var(--rust);color:#fff;border-color:var(--rust);font-weight:600}
   .modal button.m.ghost{background:#fff}
+  /* scan */
+  .seg{display:flex;gap:6px;margin-bottom:10px}
+  .seg button{flex:1;padding:9px;border:1px solid var(--line);background:#f7f5f0;border-radius:8px;cursor:pointer;font-size:14px}
+  .seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  #scanPreview{position:relative;border:1px solid var(--line);border-radius:10px;background:#f3f1ec;min-height:180px;max-height:44vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  #scanCanvas{max-width:100%;max-height:44vh;display:none;background:#fff}
+  #scanEmpty{color:#8b95a1;font-size:14px;padding:30px;text-align:center}
+  #scanRotate{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:18px;cursor:pointer;display:none;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+  #scanThumbs{display:flex;gap:8px;overflow-x:auto;margin-top:10px}
+  #scanThumbs .th{position:relative;flex:0 0 auto}
+  #scanThumbs .th img{height:70px;border:2px solid transparent;border-radius:6px;display:block;background:#fff;cursor:pointer}
+  #scanThumbs .th.sel img{border-color:var(--sky)}
+  #scanThumbs .th button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--rust);color:#fff;border:2px solid #fff;font-size:11px;cursor:pointer;line-height:1;padding:0}
   /* ---------- MOBILE ---------- */
   @media (max-width:680px){
     #bar{position:fixed;left:0;right:0;bottom:0;top:auto;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0}
@@ -91,11 +104,13 @@
 </head>
 <body>
 <div id="bar">
-  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v15</span></span>
+  <span class="brand">Fill&nbsp;&amp;&nbsp;Sign <span style="font-size:10px;opacity:.6;font-weight:400">v16</span></span>
   <div class="grp">
     <label class="file" for="pdfInput">📂 Open</label>
+    <button class="act" id="scanBtn">📷 Scan</button>
     <input type="file" id="pdfInput" accept="application/pdf">
     <input type="file" id="imgInput" accept="image/*">
+    <input type="file" id="camInput" accept="image/*" capture="environment">
   </div>
   <div class="grp" id="toolGrp">
     <button class="tool on" data-tool="select">↖</button>
@@ -178,9 +193,33 @@
   </div>
 </div>
 
+<!-- SCAN modal -->
+<div id="scanModal" class="modal">
+  <div class="card" style="width:min(680px,96vw)">
+    <h3>Scan document</h3>
+    <p>Snap each page with your camera, pick a look, then build a PDF you can fill and sign.</p>
+    <div class="seg" id="scanFilterSeg">
+      <button data-f="color">Color</button>
+      <button data-f="gray">Gray</button>
+      <button data-f="bw" class="on">B&amp;W scan</button>
+    </div>
+    <div id="scanPreview">
+      <div id="scanEmpty">No pages yet — tap “➕ Add page” to snap one.</div>
+      <canvas id="scanCanvas"></canvas>
+      <button id="scanRotate" title="Rotate">⟳</button>
+    </div>
+    <div id="scanThumbs"></div>
+    <div class="row">
+      <button class="m ghost left" id="scanAdd">➕ Add page</button>
+      <button class="m" id="scanCancel">Cancel</button>
+      <button class="m primary" id="scanBuild">Create PDF</button>
+    </div>
+  </div>
+</div>
+
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-console.log("%cFill & Sign v15 loaded","color:#6fb7e3;font-weight:bold");
+console.log("%cFill & Sign v16 loaded","color:#6fb7e3;font-weight:bold");
 const { PDFDocument, StandardFonts, rgb } = PDFLib;
 
 let srcBytes=null, pageScales=[], pageEls=[], annotations=[];
@@ -280,10 +319,11 @@ drop.onclick=()=>document.getElementById("pdfInput").click();
 ["dragenter","dragover"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("hot");}));
 ["dragleave","drop"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("hot");}));
 document.addEventListener("drop",e=>{ const f=[...(e.dataTransfer?.files||[])].find(f=>f.type==="application/pdf"); if(f) loadFile(f); });
-async function loadFile(file){
-  const buf=await file.arrayBuffer(); srcBytes=buf.slice(0);
+async function loadFile(file){ await loadBytes(await file.arrayBuffer()); }
+async function loadBytes(buf){
+  srcBytes=buf.slice(0);
   annotations=[]; pageScales=[]; pageEls=[]; selected=null; uid=0; pending=null; zoom=1; panX=0; panY=0; applyTransform();
-  docEl.innerHTML=""; empty.style.display="none"; await renderPdf(buf); setTool("select");
+  docEl.innerHTML=""; empty.style.display="none"; await renderPdf(buf.slice(0)); setTool("select");
 }
 async function renderPdf(buf){
   const pdf=await pdfjsLib.getDocument({data:buf}).promise;
@@ -397,6 +437,71 @@ document.getElementById("sigCancel").onclick=()=>{ sigModal.classList.remove("sh
 document.getElementById("sigOk").onclick=()=>{ let url=null; if(sigModal.dataset.tab==="type"){ const txt=document.getElementById("typeInput").value.trim(); if(!txt)return; url=textToPng(txt,typeFont); } else { if(!hasInk)return; url=trimCanvas(sigCanvas); } pending={type:"sig",img:url}; sigModal.classList.remove("show"); setTool("placesig"); };
 function textToPng(txt,font){ const pad=10,fs=72; const m=document.createElement("canvas").getContext("2d"); m.font="400 "+fs+"px "+font; const w=Math.ceil(m.measureText(txt).width)+pad*2,h=fs+pad*2; const c=document.createElement("canvas"); c.width=w;c.height=h; const ctx=c.getContext("2d"); ctx.font="400 "+fs+"px "+font; ctx.fillStyle="#111"; ctx.textBaseline="middle"; ctx.fillText(txt,pad,h/2); return c.toDataURL("image/png"); }
 function trimCanvas(cv){ const ctx=cv.getContext("2d"); const {width:w,height:h}=cv; const d=ctx.getImageData(0,0,w,h).data; let minX=w,minY=h,maxX=0,maxY=0,found=false; for(let y=0;y<h;y++)for(let x=0;x<w;x++){ if(d[(y*w+x)*4+3]>10){found=true; if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;} } if(!found) return cv.toDataURL("image/png"); const pad=8; minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(w,maxX+pad);maxY=Math.min(h,maxY+pad); const tw=maxX-minX,th=maxY-minY; const out=document.createElement("canvas"); out.width=tw;out.height=th; out.getContext("2d").drawImage(cv,minX,minY,tw,th,0,0,tw,th); return out.toDataURL("image/png"); }
+
+/* ---------- SCAN (camera → PDF) ---------- */
+const scanModal=document.getElementById("scanModal"), scanCanvas=document.getElementById("scanCanvas"), camInput=document.getElementById("camInput");
+let scanPages=[]; let scanFilter="bw"; let scanSel=-1;
+document.getElementById("scanBtn").onclick=()=>{ scanModal.classList.add("show"); renderScan(); };
+document.getElementById("scanCancel").onclick=()=>{ scanModal.classList.remove("show"); };
+document.getElementById("scanAdd").onclick=()=>camInput.click();
+document.getElementById("scanRotate").onclick=()=>{ if(scanSel<0)return; scanPages[scanSel].rot=(scanPages[scanSel].rot+90)%360; renderScan(); };
+document.querySelectorAll("#scanFilterSeg button").forEach(b=>{ b.onclick=()=>{ scanFilter=b.dataset.f; document.querySelectorAll("#scanFilterSeg button").forEach(x=>x.classList.toggle("on",x===b)); renderScan(); }; });
+camInput.onchange=e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=()=>{ const im=new Image(); im.onload=()=>{ scanPages.push({orig:downscale(im,1600),rot:0}); scanSel=scanPages.length-1; renderScan(); }; im.src=rd.result; };
+  rd.readAsDataURL(f); e.target.value=""; };
+
+function downscale(img,max){ let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height; const s=Math.min(1,max/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s); const c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(img,0,0,w,h); return c; }
+function rotatedCanvas(pg){ const {orig,rot}=pg; if(!rot) return orig; const w=orig.width,h=orig.height; const c=document.createElement("canvas"); if(rot%180===0){c.width=w;c.height=h;}else{c.width=h;c.height=w;} const ctx=c.getContext("2d"); ctx.translate(c.width/2,c.height/2); ctx.rotate(rot*Math.PI/180); ctx.drawImage(orig,-w/2,-h/2); return c; }
+function processPage(pg){ const base=rotatedCanvas(pg); const c=document.createElement("canvas"); c.width=base.width; c.height=base.height; const ctx=c.getContext("2d"); ctx.drawImage(base,0,0); if(scanFilter==="bw") toBW(c); else if(scanFilter==="gray") toGray(c); else enhanceColor(c); return c; }
+function renderScan(){
+  const has=scanPages.length>0;
+  document.getElementById("scanEmpty").style.display=has?"none":"block";
+  scanCanvas.style.display=has?"block":"none";
+  document.getElementById("scanRotate").style.display=has?"block":"none";
+  if(has){ if(scanSel<0||scanSel>=scanPages.length) scanSel=scanPages.length-1; const out=processPage(scanPages[scanSel]); scanCanvas.width=out.width; scanCanvas.height=out.height; scanCanvas.getContext("2d").drawImage(out,0,0); }
+  const tw=document.getElementById("scanThumbs"); tw.innerHTML="";
+  scanPages.forEach((pg,i)=>{ const out=processPage(pg); const th=document.createElement("div"); th.className="th"+(i===scanSel?" sel":"");
+    const img=document.createElement("img"); img.src=out.toDataURL("image/jpeg",0.6); img.onclick=()=>{ scanSel=i; renderScan(); }; th.appendChild(img);
+    const del=document.createElement("button"); del.textContent="×"; del.onclick=ev=>{ ev.stopPropagation(); scanPages.splice(i,1); if(scanSel>=scanPages.length)scanSel=scanPages.length-1; renderScan(); }; th.appendChild(del);
+    tw.appendChild(th); });
+}
+document.getElementById("scanBuild").onclick=async()=>{
+  if(!scanPages.length){ scanModal.classList.remove("show"); return; }
+  const btn=document.getElementById("scanBuild"); const old=btn.textContent; btn.textContent="Building…";
+  try{ const bytes=await buildScanPDF(); scanModal.classList.remove("show"); await loadBytes(bytes.slice().buffer); scanPages=[]; scanSel=-1; }
+  catch(err){ console.error(err); alert("Scan build failed: "+err.message); }
+  btn.textContent=old;
+};
+async function buildScanPDF(){
+  const doc=await PDFDocument.create();
+  for(const pg of scanPages){
+    const out=processPage(pg); const isBW=scanFilter==="bw";
+    const url=out.toDataURL(isBW?"image/png":"image/jpeg",0.9); const bytes=await (await fetch(url)).arrayBuffer();
+    const img=isBW?await doc.embedPng(bytes):await doc.embedJpg(bytes);
+    const PW=612,PH=792,m=18; const page=doc.addPage([PW,PH]);
+    const s=Math.min((PW-2*m)/img.width,(PH-2*m)/img.height); const dw=img.width*s,dh=img.height*s;
+    page.drawImage(img,{x:(PW-dw)/2,y:(PH-dh)/2,width:dw,height:dh});
+  }
+  return await doc.save();
+}
+function toGray(canvas){ const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,img=ctx.getImageData(0,0,w,h),d=img.data;
+  for(let i=0;i<d.length;i+=4){ let g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; g=(g-128)*1.25+128+8; d[i]=d[i+1]=d[i+2]=g<0?0:g>255?255:g; } ctx.putImageData(img,0,0); }
+function enhanceColor(canvas){ const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,img=ctx.getImageData(0,0,w,h),d=img.data;
+  for(let i=0;i<d.length;i+=4){ for(let k=0;k<3;k++){ let v=(d[i+k]-128)*1.2+128+8; d[i+k]=v<0?0:v>255?255:v; } } ctx.putImageData(img,0,0); }
+function toBW(canvas){
+  const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,img=ctx.getImageData(0,0,w,h),d=img.data;
+  const gray=new Float32Array(w*h);
+  for(let i=0,j=0;i<d.length;i+=4,j++){ gray[j]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]; }
+  const iw=w+1; const integ=new Float64Array(iw*(h+1));
+  for(let y=1;y<=h;y++){ let rs=0; for(let x=1;x<=w;x++){ rs+=gray[(y-1)*w+(x-1)]; integ[y*iw+x]=integ[(y-1)*iw+x]+rs; } }
+  let S=Math.floor(Math.min(w,h)/16); if(S<15)S=15; if(S%2===0)S++; const half=S>>1; const C=8;
+  for(let y=0;y<h;y++){ const y1=Math.max(0,y-half),y2=Math.min(h-1,y+half);
+    for(let x=0;x<w;x++){ const x1=Math.max(0,x-half),x2=Math.min(w-1,x+half); const count=(x2-x1+1)*(y2-y1+1);
+      const sum=integ[(y2+1)*iw+(x2+1)]-integ[y1*iw+(x2+1)]-integ[(y2+1)*iw+x1]+integ[y1*iw+x1];
+      const mean=sum/count; const v=gray[y*w+x]<(mean-C)?0:255; const k=(y*w+x)*4; d[k]=d[k+1]=d[k+2]=v; d[k+3]=255;
+    } }
+  ctx.putImageData(img,0,0);
+}
 
 /* ---------- export ---------- */
 document.getElementById("download").onclick=exportPdf;
