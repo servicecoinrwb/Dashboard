@@ -3,92 +3,82 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MT Dispatch Simulator — Burst Model vs Traditional</title>
+<title>MT Dispatch Simulator — A vs B vs C</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0B1420; --panel:#101E2E; --panel2:#0D1826; --line:#1C2E42;
   --txt:#D7E2ED; --dim:#7C8FA3; --blue:#4C8DF5; --red:#E4584A;
-  --green:#3FB97C; --amber:#E8A33D; --gray:#3A4C60;
+  --green:#3FB97C; --amber:#E8A33D; --gray:#3A4C60; --violet:#9B7BF3;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Barlow',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:16px;line-height:1.5}
-.wrap{max-width:960px;margin:0 auto;padding:0 16px 80px}
-header{padding:30px 16px 8px;max-width:960px;margin:0 auto}
+.wrap{max-width:1020px;margin:0 auto;padding:0 16px 80px}
+header{padding:30px 16px 8px;max-width:1020px;margin:0 auto}
 .eyebrow{font-family:'Barlow Condensed';font-weight:600;letter-spacing:.15em;text-transform:uppercase;font-size:13px;color:var(--blue)}
 h1{font-family:'Barlow Condensed';font-weight:700;font-size:40px;text-transform:uppercase;line-height:1.02;margin-top:4px}
-h1 .r{color:var(--red)}
-.sub{color:var(--dim);font-size:15px;margin-top:8px;max-width:64ch}
+h1 .r{color:var(--red)} h1 .v{color:var(--violet)}
+.sub{color:var(--dim);font-size:15px;margin-top:8px;max-width:70ch}
 h2{font-family:'Barlow Condensed';font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px}
 section{margin-top:34px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
-
-/* controls */
 .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px 24px}
 .ctl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-family:'Barlow Condensed';font-weight:600}
 .ctl .val{font-family:'JetBrains Mono';font-weight:700;color:var(--txt);font-size:14px}
 input[type=range]{width:100%;margin-top:8px;accent-color:var(--blue);height:22px}
 .runrow{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap}
-button.run{
-  font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.08em;
-  font-size:18px;background:var(--blue);color:#06111F;border:none;border-radius:8px;
-  padding:12px 28px;cursor:pointer;
-}
+button.run{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:18px;background:var(--blue);color:#06111F;border:none;border-radius:8px;padding:12px 28px;cursor:pointer}
 button.run:hover{background:#6AA2F7}
 button.run:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .runnote{font-size:13px;color:var(--dim)}
-
-/* verdict */
 .verdict{display:none;background:linear-gradient(180deg,#12233A,#0F1D30);border:1px solid #274566;border-radius:12px;padding:20px;margin-top:24px;text-align:center}
-.verdict .big{font-family:'JetBrains Mono';font-weight:700;font-size:38px;color:var(--green)}
-.verdict .big.neg{color:var(--red)}
+.verdict .big{font-family:'JetBrains Mono';font-weight:700;font-size:34px;color:var(--green)}
 .verdict .cap{font-family:'Barlow Condensed';font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:14px;color:var(--dim);margin-top:4px}
-
-/* scoreboard */
-.score{display:none;margin-top:24px}
-table{width:100%;border-collapse:collapse;font-size:15px}
-th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right}
-th:first-child,td:first-child{text-align:left;color:var(--dim)}
-th{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--txt)}
-td{font-family:'JetBrains Mono';font-size:14px}
-td.a{color:#9FB4CA} td.b{color:#EAF2FA;font-weight:600}
-td.win{color:var(--green);font-weight:700}
-tr.net td{border-top:2px solid #2A4666;font-weight:700;font-size:15px}
-
-/* timeline */
+.verdict .sub2{font-size:14px;color:var(--dim);margin-top:10px}
+.verdict .sub2 b{color:var(--txt)}
+.score{display:none;margin-top:24px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:620px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;color:var(--dim);white-space:normal}
+th{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:14.5px;color:var(--txt)}
+th.a{color:#9FB4CA} th.b{color:var(--blue)} th.c{color:var(--violet)}
+td{font-family:'JetBrains Mono';font-size:13.5px}
+td.best{color:var(--green);font-weight:700}
+tr.net td{border-top:2px solid #2A4666;font-weight:700;font-size:14.5px}
 .tl{display:none;margin-top:24px}
-.tl h3{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.05em;margin:14px 0 6px}
+.tl h3{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;font-size:19px;letter-spacing:.05em;margin:18px 0 8px;color:var(--txt)}
 .tl h3 .temp{color:var(--red);font-family:'JetBrains Mono';font-size:15px}
-.lane{position:relative;height:34px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;margin-bottom:8px;overflow:hidden}
-.lane .nm{position:absolute;left:8px;top:8px;font-family:'Barlow Condensed';font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);z-index:2;text-shadow:0 0 4px #0B1420}
+.tl h4{font-family:'Barlow Condensed';font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:10px 0 4px}
+.tl h4 i{font-style:normal;color:var(--txt)}
+.lane{position:relative;height:32px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;margin-bottom:6px;overflow:hidden}
+.lane .nm{position:absolute;left:8px;top:7px;font-family:'Barlow Condensed';font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);z-index:2;text-shadow:0 0 4px #0B1420}
+.lane.empty .nm{color:#54687D}
 .blk{position:absolute;top:4px;bottom:4px;border-radius:4px;opacity:.92}
 .blk.diag{background:var(--blue)} .blk.rep{background:var(--green)}
 .blk.prem{background:var(--amber)} .blk.fm{background:var(--gray)}
 .blk.dry{background:transparent;border:2px dashed var(--red)}
 .blk.lock{background:var(--blue);outline:2px solid var(--amber);outline-offset:-2px}
 .offshade{position:absolute;top:0;bottom:0;background:rgba(0,0,0,.42);z-index:1}
-.axis{position:relative;height:18px;font-family:'JetBrains Mono';font-size:11px;color:var(--dim)}
+.axis{position:relative;height:18px;font-family:'JetBrains Mono';font-size:11px;color:var(--dim);margin-bottom:6px}
 .axis span{position:absolute;transform:translateX(-50%)}
 .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--dim);margin-top:10px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .legend .dry i{background:transparent;border:2px dashed var(--red)}
-
-/* assumptions */
 details{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
 summary{cursor:pointer;padding:14px 18px;font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:16px}
 details .inner{padding:0 18px 18px;font-size:14.5px;color:var(--dim)}
 details .inner b{color:var(--txt)}
 details .inner p{margin-bottom:8px}
-@media(max-width:560px){h1{font-size:32px}.verdict .big{font-size:30px}}
+@media(max-width:560px){h1{font-size:30px}.verdict .big{font-size:26px}}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="eyebrow">Mechanical Temp &middot; Dispatch Lab</div>
-  <h1>Burst Model <span class="r">vs</span> Traditional</h1>
-  <p class="sub">Monte Carlo of a full month, run 12 times. Both schedules face the <b>identical lead stream</b> each day — same calls, same times, same customers — so the only difference is how the trucks are run.</p>
+  <div class="eyebrow">Mechanical Temp &middot; Dispatch Lab v2</div>
+  <h1>Traditional <span class="r">vs</span> Burst <span class="r">vs</span> <span class="v">Contrarian</span></h1>
+  <p class="sub">Monte Carlo of a full month with real days of the week, run 12 times. All three schedules face the <b>identical lead stream</b> — same calls, same times, same customers. Weekends run all-day demand with thin competition; weekday demand runs in the two bursts.</p>
 </header>
 
 <div class="wrap">
@@ -97,39 +87,40 @@ details .inner p{margin-bottom:8px}
   <h2>Market Inputs</h2>
   <div class="controls">
     <div class="ctl"><label>Hot days this month (88°+)<span class="val" id="v_hot">14</span></label><input type="range" id="s_hot" min="4" max="26" value="14"></div>
-    <div class="ctl"><label>LSA leads on a hot day<span class="val" id="v_leads">3.0</span></label><input type="range" id="s_leads" min="1" max="8" step="0.5" value="3"></div>
+    <div class="ctl"><label>LSA leads on a hot weekday<span class="val" id="v_leads">3.0</span></label><input type="range" id="s_leads" min="1" max="8" step="0.5" value="3"></div>
     <div class="ctl"><label>Close rate on diagnostics<span class="val" id="v_close">70%</span></label><input type="range" id="s_close" min="40" max="95" value="70"></div>
     <div class="ctl"><label>Average repair ticket<span class="val" id="v_ticket">$520</span></label><input type="range" id="s_ticket" min="250" max="900" step="10" value="520"></div>
-    <div class="ctl"><label>Evening premium (5–8pm)<span class="val" id="v_prem">25%</span></label><input type="range" id="s_prem" min="0" max="60" step="5" value="25"></div>
+    <div class="ctl"><label>Evening &amp; weekend premium<span class="val" id="v_prem">25%</span></label><input type="range" id="s_prem" min="0" max="60" step="5" value="25"></div>
     <div class="ctl"><label>Cost per LSA lead<span class="val" id="v_cost">$88</span></label><input type="range" id="s_cost" min="50" max="130" step="2" value="88"></div>
   </div>
   <div class="runrow">
     <button class="run" id="run">Run Simulation</button>
-    <span class="runnote" id="note">Simulates 360 days per schedule. New random weather every run.</span>
+    <span class="runnote">12 months per schedule, shared lead streams. New random weather every run.</span>
   </div>
 </section>
 
 <div class="verdict" id="verdict">
   <div class="big" id="delta">—</div>
-  <div class="cap" id="deltacap">Extra net per month with the burst model</div>
+  <div class="cap" id="deltacap"></div>
+  <div class="sub2" id="deltasub"></div>
 </div>
 
 <section class="score panel" id="score">
   <h2>Monthly Averages</h2>
   <table>
-    <thead><tr><th>Metric</th><th>A · Traditional 8–4</th><th>B · Burst / Split Shift</th></tr></thead>
+    <thead><tr><th>Metric</th><th class="a">A · Traditional</th><th class="b">B · Burst/Split</th><th class="c">C · Contrarian</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
 </section>
 
 <section class="tl panel" id="tl">
-  <h2>Hottest Day of the Month — Hour by Hour</h2>
+  <h2>Hour by Hour — Same Days, Three Ways</h2>
   <div id="tlbody"></div>
   <div class="legend">
     <span><i style="background:var(--blue)"></i>Diagnostic</span>
     <span><i style="background:var(--green)"></i>Repair</span>
-    <span><i style="background:var(--amber)"></i>Premium repair (5–8p)</span>
-    <span><i style="background:var(--blue);outline:2px solid var(--amber);outline-offset:-2px"></i>Pre-sold 8am lock</span>
+    <span><i style="background:var(--amber)"></i>Premium repair</span>
+    <span><i style="background:var(--blue);outline:2px solid var(--amber);outline-offset:-2px"></i>Pre-sold lock</span>
     <span><i style="background:var(--gray)"></i>FM / scheduled</span>
     <span class="dry"><i></i>Dry run</span>
   </div>
@@ -138,26 +129,25 @@ details .inner p{margin-bottom:8px}
 <details>
   <summary>Model assumptions — argue with these</summary>
   <div class="inner">
-    <p><b>Lead timing:</b> ~58% of leads land in the 7–10am burst, ~27% in the 4–7pm burst, ~15% scattered midday. Lead volume scales with temperature; mild days run ~25% of hot-day volume.</p>
-    <p><b>Win odds vs offered arrival:</b> under 30 min ≈ 85%, 1 hr ≈ 72%, 2 hr ≈ 50%, 3 hr ≈ 30%, 5+ hr ≈ 5%. This is the 2-hour-window insight turned into a curve.</p>
-    <p><b>Schedule A (Traditional):</b> both trucks 8–4. Jason's mornings carry 3 hrs of FM work (8–11). Full-repair model — truck stays through the fix when parts are on the truck (50% of jobs), so calls stack behind long visits. No paid diagnostic, no confirm texts: 15–25% of booked jobs ghost, and 60% of ghosts become dry runs. Evening callers get "tomorrow" — ~18% stick. Pays for every lead.</p>
-    <p><b>Schedule B (Burst):</b> Brian 8–1 + 4–8, Jason 10–6 with FM moved to the 1–4 dead zone. Sweep model — diagnose, quote, bounce; repairs stack into afternoon/evening blocks and next-morning pre-slots. Paid diagnostic + confirm texts: ghosting drops to ~5% and texts catch 90% of it before the truck rolls. Evening leads get tonight (premium) or a locked, paid 8am slot (~50% stick). LSA pauses when the board can't offer inside 2.5 hrs — those leads are never paid for.</p>
-    <p><b>Money:</b> $89 diagnostic on every completed visit, repair ticket ±40% around the average, FM billed at $140/hr — both schedules work the same 3 FM hrs/day, just placed differently. That's deliberate: the revenue gap you see comes from capture, waste, and premium, not from dropping FM.</p>
-    <p><b>Fairness:</b> each simulated customer's willingness to wait, ghost tendency, close decision, parts-on-truck, and ticket size are drawn once and shared by both schedules.</p>
+    <p><b>Weekday demand:</b> ~58% of leads in the 7–10am burst, ~27% in the 4–7pm burst, rest scattered. <b>Weekend demand:</b> all-day plateau 9am–7pm at ~1.25× hot-weekday volume — people are home discovering failures continuously, and they're home for the repair.</p>
+    <p><b>Thin competition:</b> on weekends and after 6pm, win odds get a 1.35× boost (capped 92%) — half the vans went home. This is the HomeAdvisor-Saturday effect.</p>
+    <p><b>A · Traditional:</b> both trucks Mon–Fri 8–4, weekends off. Jason's mornings carry FM (8–11). Stay-till-fixed visits. No deposit, no texts: 15–25% ghost, 60% of ghosts = dry runs. Weekend and evening callers get "Monday" — 10% stick. Pays for every lead. No premium charged.</p>
+    <p><b>B · Burst/Split:</b> Mon–Fri Brian 8–1 + 4–8, Jason 10–6, FM in the 1–4 dead zone; Sat half-day (Brian 8–1), Sun off. Sweep model, paid lock + text chain (5% ghost, 90% caught), evening premium, LSA pauses when board can't offer inside 2.5 hrs.</p>
+    <p><b>C · Contrarian:</b> Jason runs weekdays solo 8–4 (sweep model, FM 1–4). Brian works <b>weekends only, 8am–8pm</b> — full emergency calls, diagnose-and-repair same visit when parts are on the truck, premium rates all day. ~24 Brian hours/week, exactly the HomeAdvisor pattern. Same paid-lock + text stack. Weekday evening callers get a locked next-morning slot.</p>
+    <p><b>Money:</b> $89 diagnostic per completed visit, ticket ±40% around the average, premium applies to evening (5–8p) and all weekend repairs for B and C. FM billed $140/hr, 3 hrs every weekday in all three schedules — the gap you see is capture, waste, and premium, never dropped FM.</p>
+    <p><b>Fairness:</b> each simulated customer's patience, ghost tendency, close decision, parts-on-truck, and ticket size are drawn once and shared by all three schedules.</p>
   </div>
 </details>
 
 </div>
 
 <script>
-// ---------- utils ----------
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function poisson(l,r){let L=Math.exp(-l),k=0,p=1;do{k++;p*=r()}while(p>L);return k-1}
 function gauss(r){return Math.sqrt(-2*Math.log(1-r()))*Math.cos(2*Math.PI*r())}
 const fmt$=n=>'$'+Math.round(n).toLocaleString();
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
-// ---------- truck scheduling ----------
 function truck(name,windows){return{name,windows,busy:[]}}
 function findSlot(t,dur,earliest,latestEnd){
   for(const[ws,we]of t.windows){
@@ -173,236 +163,279 @@ function findSlot(t,dur,earliest,latestEnd){
 }
 function book(t,s,dur,type){const b={s,e:s+dur,type};t.busy.push(b);t.busy.sort((x,y)=>x.s-y.s);return b}
 
-// ---------- lead generation (shared by both schedules) ----------
+// ---- lead generation with day-of-week ----
 function genMonth(P,rng){
   const days=[];const hotIdx=new Set();
   const order=[...Array(30).keys()].sort(()=>rng()-0.5);
   for(let i=0;i<P.hotDays;i++)hotIdx.add(order[i]);
   for(let d=0;d<30;d++){
+    const dow=d%7, weekend=dow>=5;
     const hot=hotIdx.has(d);
     const temp=hot?88+rng()*9:74+rng()*10;
     const heat=clamp((temp-74)/20,0.2,1.25);
-    const n=poisson(P.leadsHot*heat,rng);
+    const vol=P.leadsHot*heat*(weekend?1.25:1);
+    const n=poisson(vol,rng);
     const leads=[];
     for(let i=0;i<n;i++){
-      const u=rng();let t;
-      if(u<0.58)t=8.3+gauss(rng)*0.9;
-      else if(u<0.85)t=17.1+gauss(rng)*0.8;
-      else t=10+rng()*6;
+      let t;
+      if(weekend){
+        t=rng()<0.2?8.6+Math.abs(gauss(rng))*0.9:9+rng()*10;
+      }else{
+        const u=rng();
+        if(u<0.58)t=8.3+gauss(rng)*0.9;
+        else if(u<0.85)t=17.1+gauss(rng)*0.8;
+        else t=10+rng()*6;
+      }
       t=clamp(t,6.6,20.3);
-      leads.push({
-        t, winRoll:rng(), ghostRoll:rng(), closeRoll:rng(),
-        partsOnTruck:rng()<0.5,
-        ticket:P.ticket*(0.6+rng()*0.8)
-      });
+      leads.push({t,winRoll:rng(),ghostRoll:rng(),closeRoll:rng(),
+        partsOnTruck:rng()<0.5,ticket:P.ticket*(0.6+rng()*0.8)});
     }
     leads.sort((a,b)=>a.t-b.t);
-    days.push({temp,leads,hot});
+    days.push({temp,leads,hot,dow,weekend});
   }
   return days;
 }
 
-// ---------- win probability ----------
-function winProb(waitH){
-  if(waitH<=0.5)return .85; if(waitH<=1)return .72; if(waitH<=1.5)return .60;
-  if(waitH<=2)return .50; if(waitH<=3)return .30; if(waitH<=5)return .12; return .04;
+function winProb(waitH,thin){
+  let p;
+  if(waitH<=0.5)p=.85; else if(waitH<=1)p=.72; else if(waitH<=1.5)p=.60;
+  else if(waitH<=2)p=.50; else if(waitH<=3)p=.30; else if(waitH<=5)p=.12; else p=.04;
+  if(thin)p=Math.min(0.92,p*1.35);
+  return p;
 }
 
-// ---------- one month, one schedule ----------
 const TRAVEL=.4,DIAG=.7,REPAIR=1.5;
+
+function trucksFor(sched,dow){
+  const we=dow>=5;
+  if(sched==='A')return we?[]:[truck('Brian',[[8,16]]),truck('Jason',[[8,16]])];
+  if(sched==='B'){
+    if(dow<5)return[truck('Brian',[[8,13],[16,20]]),truck('Jason',[[10,18]])];
+    if(dow===5)return[truck('Brian',[[8,13]])];
+    return[];
+  }
+  return we?[truck('Brian',[[8,20]])]:[truck('Jason',[[8,16]])];
+}
+function brianHours(sched,dow){
+  const we=dow>=5;
+  if(sched==='A')return we?0:8;
+  if(sched==='B')return dow<5?9:(dow===5?5:0);
+  return we?12:0;
+}
+
 function simMonth(sched,month,P,record){
-  const S={rev:0,fmRev:0,leadSpend:0,leadsIn:0,leadsPaid:0,wins:0,dry:0,prem:0,presold:0,offSum:0,offN:0};
-  let carry=[]; // jobs locked for next morning: {kind:'diag'|'repair', lead}
-  let bestDay=null,bestTemp=-1;
+  const S={rev:0,fmRev:0,leadSpend:0,leadsIn:0,leadsPaid:0,wins:0,dry:0,prem:0,presold:0,offSum:0,offN:0,brianH:0,wkndRev:0};
+  const deposit=sched!=='A', premOK=sched!=='A';
+  let carry=[];
+  let bestWD=null,bestWDt=-1,bestWE=null,bestWEt=-1;
 
   for(let d=0;d<30;d++){
     const day=month[d];
-    const trucks = sched==='A'
-      ? [truck('Brian',[[8,16]]),truck('Jason',[[8,16]])]
-      : [truck('Brian',[[8,13],[16,20]]),truck('Jason',[[10,18]])];
-    // FM: same 3 hrs/day, placed differently
-    if(sched==='A'){book(trucks[1],8,3,'fm')}else{book(trucks[1],13,3,'fm')}
-    S.fmRev+=3*140;
+    const trucks=trucksFor(sched,day.dow);
+    S.brianH+=brianHours(sched,day.dow);
+    if(!day.weekend&&trucks.length){
+      const jason=trucks.find(t=>t.name==='Jason');
+      if(jason){book(jason,sched==='A'?8:13,3,'fm');S.fmRev+=3*140}
+    }
+    const sameVisit=(sched==='A')||(sched==='C'&&day.weekend);
 
-    // book carried-in locks/repairs first thing
-    const todayCarry=carry; carry=[];
+    // carried-in locks & repairs
+    const todayCarry=carry;carry=[];
     for(const c of todayCarry){
+      if(!trucks.length){carry.push(c);continue}
       const dur=c.kind==='repair'?TRAVEL+REPAIR:TRAVEL+DIAG;
       let placed=null;
-      for(const tk of trucks){const s=findSlot(tk,dur,8);if(s!=null&&(placed==null||s<placed.s)){placed={tk,s}}}
+      for(const tk of trucks){const s=findSlot(tk,dur,8);if(s!=null&&(placed==null||s<placed.s))placed={tk,s}}
       if(!placed){carry.push(c);continue}
       if(c.kind==='repair'){
-        book(placed.tk,placed.s,dur,'rep');S.rev+=c.lead.closedTicket;
+        const pr=premOK&&(day.weekend||(placed.s+dur>17&&placed.s<20));
+        book(placed.tk,placed.s,dur,pr?'prem':'rep');
+        const extra=pr?c.lead.ticket*P.prem:0;
+        S.rev+=c.lead.ticket+extra;S.prem+=extra;
+        if(day.weekend)S.wkndRev+=c.lead.ticket+extra;
       }else{
-        // pre-sold diagnostic (lock)
         book(placed.tk,placed.s,dur,'lock');S.rev+=89;S.presold++;
-        if(c.lead.closeRoll<P.close){
-          scheduleRepair(c.lead,trucks,placed.s+dur,S,sched,P,carry);
-        }
+        if(day.weekend)S.wkndRev+=89;
+        if(c.lead.closeRoll<P.close)scheduleRepair(c.lead,trucks,placed.s+dur+ (c.lead.partsOnTruck?0:2),day);
       }
     }
 
     // live leads
     for(const L of day.leads){
       S.leadsIn++;
-      const durA=TRAVEL+DIAG+(L.partsOnTruck?REPAIR:0);
-      const dur=sched==='A'?durA:TRAVEL+DIAG;
-      // find best same-day slot
+      const thin=day.weekend||L.t>=18;
+      const dur=sameVisit?TRAVEL+DIAG+(L.partsOnTruck?REPAIR:0):TRAVEL+DIAG;
       let best=null;
       for(const tk of trucks){
-        const s=findSlot(tk,dur,L.t+0.15,sched==='B'?19.6:null);
+        const s=findSlot(tk,dur,L.t+0.15,deposit?19.8:null);
         if(s!=null&&(best==null||s<best.s))best={tk,s};
       }
-      const evening=L.t>=16.5;
 
-      // --- no slot today ---
       if(!best){
-        if(sched==='B'){
-          // pause LSA if tomorrow lock queue already deep
-          if(carry.length>=3){continue} // paused: lead never received/paid
+        if(deposit){
+          if(carry.length>=3)continue; // LSA paused — never paid
           S.leadsPaid++;S.leadSpend+=P.leadCost;
-          // offer locked, paid 8am slot
-          if(L.winRoll<0.5){
-            if(L.ghostRoll<0.05){/*ghost caught by text*/}
-            else {carry.push({kind:'diag',lead:L});S.wins++;}
-          }
-        } else {
+          if(L.winRoll<0.5&&L.ghostRoll>=0.05){carry.push({kind:'diag',lead:L});S.wins++}
+        }else{
           S.leadsPaid++;S.leadSpend+=P.leadCost;
-          // vague "tomorrow" offer
-          if(L.winRoll<0.18){
-            if(L.ghostRoll<0.25){/*ghosts overnight*/}
-            else {carry.push({kind:'diag',lead:L});S.wins++;}
-          }
+          if(L.winRoll<0.10&&L.ghostRoll>=0.25){carry.push({kind:'diag',lead:L});S.wins++}
         }
         continue;
       }
 
-      // --- slot exists ---
       S.leadsPaid++;S.leadSpend+=P.leadCost;
       const wait=best.s-L.t;S.offSum+=wait;S.offN++;
-      let p=winProb(wait);
-      if(L.winRoll>=p)continue; // lost to a faster van
-      // ghost check
-      const ghostP=sched==='B'?0.05:(wait>2?0.25:0.15);
+      const p=winProb(wait,thin);
+      if(L.winRoll>=p)continue;
+      const ghostP=deposit?0.05:(wait>2?0.25:0.15);
       if(L.ghostRoll<ghostP){
-        if(sched==='B'){
-          if(L.ghostRoll<ghostP*0.1){const b=book(best.tk,best.s,dur,'dry');S.dry++;}
-          // else text caught it — slot never booked
-        } else {
-          if(L.ghostRoll<ghostP*0.6){book(best.tk,best.s,dur,'dry');S.dry++;}
+        if(deposit){
+          if(L.ghostRoll<ghostP*0.1){book(best.tk,best.s,dur,'dry');S.dry++}
+        }else{
+          if(L.ghostRoll<ghostP*0.6){book(best.tk,best.s,dur,'dry');S.dry++}
         }
         continue;
       }
-      // real visit
-      S.wins++;S.rev+=89;
-      const blk=book(best.tk,best.s,dur,sched==='A'&&L.partsOnTruck?'rep':'diag');
-      const closed=L.closeRoll<P.close;
-      if(!closed)continue;
+      S.wins++;S.rev+=89;if(day.weekend)S.wkndRev+=89;
+      const doRepairNow=sameVisit&&L.partsOnTruck&&L.closeRoll<P.close;
+      book(best.tk,best.s,dur,doRepairNow?(premOK&&(day.weekend||(best.s+dur>17&&best.s<20))?'prem':'rep'):'diag');
+      if(L.closeRoll>=P.close)continue;
       L.closedTicket=L.ticket;
-      if(sched==='A'&&L.partsOnTruck){
-        S.rev+=L.ticket; // repaired in-visit
-      } else {
-        scheduleRepair(L,trucks,best.s+dur+(L.partsOnTruck?0:2),S,sched,P,carry);
+      if(doRepairNow){
+        const pr=premOK&&(day.weekend||(best.s+dur>17&&best.s<20));
+        const extra=pr?L.ticket*P.prem:0;
+        S.rev+=L.ticket+extra;S.prem+=extra;
+        if(day.weekend)S.wkndRev+=L.ticket+extra;
+      }else{
+        scheduleRepair(L,trucks,best.s+dur+(L.partsOnTruck?0:2),day);
       }
     }
 
-    if(record&&day.temp>bestTemp){bestTemp=day.temp;bestDay={temp:day.temp,trucks:trucks.map(t=>({name:t.name,windows:t.windows,busy:t.busy.slice()}))}}
+    if(record){
+      if(day.weekend&&day.temp>bestWEt){bestWEt=day.temp;bestWE=snap(trucks,day)}
+      if(!day.weekend&&day.temp>bestWDt){bestWDt=day.temp;bestWD=snap(trucks,day)}
+    }
   }
   S.avgWait=S.offN?S.offSum/S.offN:0;
   S.net=S.rev+S.fmRev-S.leadSpend;
-  if(record)S.sample=bestDay;
+  if(record){S.sampleWD=bestWD;S.sampleWE=bestWE}
   return S;
 
-  function scheduleRepair(L,trucks,earliest,S,sched,P,carry){
+  function snap(trucks,day){return{temp:day.temp,trucks:trucks.map(t=>({name:t.name,windows:t.windows,busy:t.busy}))}}
+  function scheduleRepair(L,trucks,earliest,day){
     const dur=TRAVEL+REPAIR;
     let placed=null;
-    for(const tk of trucks){const s=findSlot(tk,dur,earliest,sched==='B'?19.6:null);if(s!=null&&(placed==null||s<placed.s))placed={tk,s}}
+    for(const tk of trucks){const s=findSlot(tk,dur,earliest,deposit?19.8:null);if(s!=null&&(placed==null||s<placed.s))placed={tk,s}}
     if(placed){
-      const premium=sched==='B'&&placed.s+dur>17&&placed.s<20;
-      book(placed.tk,placed.s,dur,premium?'prem':'rep');
-      const amt=L.ticket*(premium?1+P.prem:1);
-      S.rev+=amt;if(premium)S.prem+=L.ticket*P.prem;
-    } else {
-      carry.push({kind:'repair',lead:L});L.closedTicket=L.ticket;
+      const pr=premOK&&(day.weekend||(placed.s+dur>17&&placed.s<20));
+      book(placed.tk,placed.s,dur,pr?'prem':'rep');
+      const extra=pr?L.ticket*P.prem:0;
+      S.rev+=L.ticket+extra;S.prem+=extra;
+      if(day.weekend)S.wkndRev+=L.ticket+extra;
+    }else{
+      carry.push({kind:'repair',lead:L});
     }
   }
 }
 
 // ---------- run + render ----------
 const $=id=>document.getElementById(id);
-const sliders=[['s_hot','v_hot',v=>v],['s_leads','v_leads',v=>(+v).toFixed(1)],['s_close','v_close',v=>v+'%'],['s_ticket','v_ticket',v=>'$'+v],['s_prem','v_prem',v=>v+'%'],['s_cost','v_cost',v=>'$'+v]];
-sliders.forEach(([s,v,f])=>{$(s).addEventListener('input',e=>$(v).textContent=f(e.target.value))});
+[['s_hot','v_hot',v=>v],['s_leads','v_leads',v=>(+v).toFixed(1)],['s_close','v_close',v=>v+'%'],['s_ticket','v_ticket',v=>'$'+v],['s_prem','v_prem',v=>v+'%'],['s_cost','v_cost',v=>'$'+v]]
+.forEach(([s,v,f])=>{$(s).addEventListener('input',e=>$(v).textContent=f(e.target.value))});
 
 $('run').addEventListener('click',()=>{
   const P={hotDays:+$('s_hot').value,leadsHot:+$('s_leads').value,close:+$('s_close').value/100,
            ticket:+$('s_ticket').value,prem:+$('s_prem').value/100,leadCost:+$('s_cost').value};
-  const ITER=12,agg={A:{},B:{}};let sampleA=null,sampleB=null,sampleTemp=0;
-  const keys=['rev','fmRev','leadSpend','leadsIn','leadsPaid','wins','dry','prem','presold','net','avgWait'];
-  keys.forEach(k=>{agg.A[k]=0;agg.B[k]=0});
+  const ITER=12,keys=['rev','fmRev','leadSpend','leadsIn','leadsPaid','wins','dry','prem','presold','net','avgWait','brianH','wkndRev'];
+  const agg={A:{},B:{},C:{}};['A','B','C'].forEach(s=>keys.forEach(k=>agg[s][k]=0));
+  let samples=null;
   const seed=Math.floor(Math.random()*1e9);
   for(let i=0;i<ITER;i++){
     const rng=mulberry32(seed+i*7919);
-    const month=genMonth(P,rng);
-    const monthB=JSON.parse(JSON.stringify(month));
+    const m1=genMonth(P,rng),m2=JSON.parse(JSON.stringify(m1)),m3=JSON.parse(JSON.stringify(m1));
     const rec=i===0;
-    const A=simMonth('A',month,P,rec),B=simMonth('B',monthB,P,rec);
-    keys.forEach(k=>{agg.A[k]+=A[k]/ITER;agg.B[k]+=B[k]/ITER});
-    if(rec){sampleA=A.sample;sampleB=B.sample;sampleTemp=A.sample?A.sample.temp:0}
+    const R={A:simMonth('A',m1,P,rec),B:simMonth('B',m2,P,rec),C:simMonth('C',m3,P,rec)};
+    ['A','B','C'].forEach(s=>keys.forEach(k=>agg[s][k]+=R[s][k]/ITER));
+    if(rec)samples=R;
   }
-  render(agg,P,sampleA,sampleB,sampleTemp);
+  render(agg,P,samples);
 });
 
-function render(g,P,sA,sB,temp){
-  const d=g.B.net-g.A.net;
-  const el=$('delta');el.textContent=(d>=0?'+':'−')+fmt$(Math.abs(d)).slice(0);el.className='big'+(d<0?' neg':'');
-  $('deltacap').textContent=(d>=0?'Extra':'Less')+' net per month with the burst model ('+(d>=0?'+':'')+Math.round(d/Math.max(g.A.net,1)*100)+'%)';
+function render(g,P,R){
+  const nets={A:g.A.net,B:g.B.net,C:g.C.net};
+  const bestKey=Object.keys(nets).reduce((a,b)=>nets[a]>=nets[b]?a:b);
+  const names={A:'Traditional',B:'Burst/Split',C:'Contrarian'};
+  $('delta').textContent=names[bestKey]+' wins · '+fmt$(nets[bestKey])+' net';
+  $('deltacap').textContent='vs Traditional: Burst '+sign(nets.B-nets.A)+' · Contrarian '+sign(nets.C-nets.A);
+  $('deltasub').innerHTML='Contrarian does it on <b>'+Math.round(g.C.brianH)+' Brian-hours/month</b> vs '+Math.round(g.B.brianH)+' for Burst and '+Math.round(g.A.brianH)+' for Traditional — <b>'+fmt$(nets.C/Math.max(g.C.brianH,1))+'/Brian-hour</b> for C vs '+fmt$(nets.B/Math.max(g.B.brianH,1))+' for B.';
   $('verdict').style.display='block';
 
-  const row=(label,a,b,better)=>{
-    const hl=better==null?['a','b']:(better==='b'?['a','b win']:['a win','b']);
-    return `<tr><td>${label}</td><td class="${hl[0]}">${a}</td><td class="${hl[1]}">${b}</td></tr>`;
+  const row=(label,vals,bestFn)=>{
+    const best=bestFn?bestFn(vals):null;
+    return `<tr><td>${label}</td>`+['A','B','C'].map((k,i)=>`<td class="${best===i?'best':''}">${vals[i]}</td>`).join('')+'</tr>';
   };
-  const A=g.A,B=g.B;
+  const hi=v=>v.indexOf(Math.max(...v.map(parseFloat)));
+  const lo=v=>v.indexOf(Math.min(...v.map(parseFloat)));
+  const A=g.A,B=g.B,C=g.C;
+  const raw=(a,b,c)=>[a,b,c];
   $('rows').innerHTML=
-    row('Emergency jobs won / month',A.wins.toFixed(1),B.wins.toFixed(1),B.wins>A.wins?'b':'a')+
-    row('Win rate on paid leads',Math.round(A.wins/Math.max(A.leadsPaid,1)*100)+'%',Math.round(B.wins/Math.max(B.leadsPaid,1)*100)+'%',null)+
-    row('Avg arrival offered',A.avgWait.toFixed(1)+' hr',B.avgWait.toFixed(1)+' hr',B.avgWait<A.avgWait?'b':'a')+
-    row('Leads paid for',Math.round(A.leadsPaid),Math.round(B.leadsPaid),null)+
-    row('Lead spend',fmt$(A.leadSpend),fmt$(B.leadSpend),B.leadSpend<A.leadSpend?'b':'a')+
-    row('$ on leads lost',fmt$((A.leadsPaid-A.wins)*P.leadCost),fmt$((B.leadsPaid-B.wins)*P.leadCost),'b')+
-    row('Dry runs',A.dry.toFixed(1),B.dry.toFixed(1),B.dry<A.dry?'b':'a')+
-    row('Pre-sold 8am slots',A.presold.toFixed(1),B.presold.toFixed(1),B.presold>A.presold?'b':'a')+
-    row('Evening premium collected',fmt$(A.prem),fmt$(B.prem),B.prem>A.prem?'b':'a')+
-    row('Service revenue',fmt$(A.rev),fmt$(B.rev),null)+
-    row('FM revenue (equal hours)',fmt$(A.fmRev),fmt$(B.fmRev),null)+
-    `<tr class="net"><td>Net after lead spend</td><td class="a">${fmt$(A.net)}</td><td class="b win">${fmt$(B.net)}</td></tr>`;
+    row('Emergency jobs won / month',raw(A.wins.toFixed(1),B.wins.toFixed(1),C.wins.toFixed(1)),hi)+
+    row('Win rate on paid leads',raw(pct(A),pct(B),pct(C)),hi)+
+    row('Leads paid for',raw(r0(A.leadsPaid),r0(B.leadsPaid),r0(C.leadsPaid)),null)+
+    row('Lead spend',raw(fmt$(A.leadSpend),fmt$(B.leadSpend),fmt$(C.leadSpend)),null)+
+    row('$ on leads lost',raw(fmt$((A.leadsPaid-A.wins)*P.leadCost),fmt$((B.leadsPaid-B.wins)*P.leadCost),fmt$((C.leadsPaid-C.wins)*P.leadCost)),lo)+
+    row('Dry runs',raw(A.dry.toFixed(1),B.dry.toFixed(1),C.dry.toFixed(1)),lo)+
+    row('Pre-sold morning locks',raw(A.presold.toFixed(1),B.presold.toFixed(1),C.presold.toFixed(1)),null)+
+    row('Premium collected',raw(fmt$(A.prem),fmt$(B.prem),fmt$(C.prem)),hi)+
+    row('Weekend service revenue',raw(fmt$(A.wkndRev),fmt$(B.wkndRev),fmt$(C.wkndRev)),hi)+
+    row('Service revenue',raw(fmt$(A.rev),fmt$(B.rev),fmt$(C.rev)),null)+
+    row('FM revenue (equal hours)',raw(fmt$(A.fmRev),fmt$(B.fmRev),fmt$(C.fmRev)),null)+
+    row('Brian hours on the clock',raw(r0(A.brianH),r0(B.brianH),r0(C.brianH)),lo)+
+    `<tr class="net"><td>Net after lead spend</td><td>${fmt$(A.net)}</td><td>${fmt$(B.net)}</td><td>${fmt$(C.net)}</td></tr>`;
   $('score').style.display='block';
 
-  // timeline
-  const H0=6,H1=21,span=H1-H0,pct=h=>((clamp(h,H0,H1)-H0)/span*100);
-  const laneHtml=(tk)=>{
+  function pct(S){return Math.round(S.wins/Math.max(S.leadsPaid,1)*100)+'%'}
+  function r0(x){return Math.round(x)}
+
+  // timelines: hottest weekday + hottest weekend, all three schedules
+  const H0=6,H1=21,pctH=h=>((clamp(h,H0,H1)-H0)/(H1-H0)*100);
+  const lane=(tk)=>{
     let s=`<div class="lane"><span class="nm">${tk.name}</span>`;
-    // off shading outside windows
     let cur=H0;
     for(const[ws,we]of tk.windows){
-      if(ws>cur)s+=`<div class="offshade" style="left:${pct(cur)}%;width:${pct(ws)-pct(cur)}%"></div>`;
+      if(ws>cur)s+=`<div class="offshade" style="left:${pctH(cur)}%;width:${pctH(ws)-pctH(cur)}%"></div>`;
       cur=we;
     }
-    if(cur<H1)s+=`<div class="offshade" style="left:${pct(cur)}%;width:${pct(H1)-pct(cur)}%"></div>`;
+    if(cur<H1)s+=`<div class="offshade" style="left:${pctH(cur)}%;width:${pctH(H1)-pctH(cur)}%"></div>`;
     for(const b of tk.busy){
       const cls=b.type==='fm'?'fm':b.type==='rep'?'rep':b.type==='prem'?'prem':b.type==='dry'?'dry':b.type==='lock'?'lock':'diag';
-      s+=`<div class="blk ${cls}" style="left:${pct(b.s)}%;width:${Math.max(pct(b.e)-pct(b.s),1)}%"></div>`;
+      s+=`<div class="blk ${cls}" style="left:${pctH(b.s)}%;width:${Math.max(pctH(b.e)-pctH(b.s),1)}%"></div>`;
     }
     return s+'</div>';
   };
+  const offLane=(who)=>`<div class="lane empty"><span class="nm">${who} — off</span><div class="offshade" style="left:0;width:100%"></div></div>`;
+  const group=(title,key)=>{
+    let h='';
+    const temps=[];
+    ['A','B','C'].forEach(k=>{const s=R[k]['sample'+key];if(s)temps.push(s.temp)});
+    h+=`<h3>${title} <span class="temp">${temps.length?Math.round(temps[0])+'°F':''}</span></h3>`;
+    ['A','B','C'].forEach(k=>{
+      const s=R[k]['sample'+key];
+      h+=`<h4><i>${k} · ${names[k]}</i></h4>`;
+      if(!s||!s.trucks.length){h+=offLane(k==='C'&&key==='WD'?'Brian':'Both trucks');return}
+      const shown=new Set();
+      s.trucks.forEach(t=>{shown.add(t.name);h+=lane(t)});
+      ['Brian','Jason'].forEach(n=>{if(!shown.has(n))h+=offLane(n)});
+    });
+    return h;
+  };
   let axis='<div class="axis">';
-  for(let h=6;h<=21;h+=3)axis+=`<span style="left:${pct(h)}%">${h<=12?h+'a':(h-12)+'p'}</span>`;
+  for(let h=6;h<=21;h+=3)axis+=`<span style="left:${pctH(h)}%">${h<=12?h+'a':(h-12)+'p'}</span>`;
   axis+='</div>';
-  $('tlbody').innerHTML=
-    `<h3>A · Traditional <span class="temp">${Math.round(temp)}°F</span></h3>`+sA.trucks.map(laneHtml).join('')+
-    `<h3 style="margin-top:20px">B · Burst / Split <span class="temp">${Math.round(temp)}°F</span></h3>`+sB.trucks.map(laneHtml).join('')+axis;
+  $('tlbody').innerHTML=group('Hottest Weekday','WD')+group('Hottest Weekend Day','WE')+axis;
   $('tl').style.display='block';
 }
+function sign(n){return (n>=0?'+':'−')+fmt$(Math.abs(n))}
 </script>
 </body>
 </html>
