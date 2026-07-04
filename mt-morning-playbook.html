@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT Morning Playbook — Win the LSA Burst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14202B;        /* deep steel */
+    --bg:#EDF0F2;         /* galvanized */
+    --card:#FFFFFF;
+    --low:#1E6FD9;        /* low-side gauge blue */
+    --high:#C7362B;       /* high-side gauge red */
+    --gray:#6B7682;
+    --line:#D5DADF;
+    --hook-bg:#FBF1EF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Barlow',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.55;
+    font-size:17px;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px 80px}
+
+  /* ---------- header ---------- */
+  header{
+    background:var(--ink);
+    color:#fff;
+    padding:28px 16px 22px;
+  }
+  .hwrap{max-width:760px;margin:0 auto}
+  .eyebrow{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    font-size:13px;color:#9FB4C8;
+  }
+  h1{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;font-size:44px;line-height:1.02;
+    text-transform:uppercase;letter-spacing:.01em;margin-top:6px;
+  }
+  h1 .red{color:#FF7A6B}
+  .sub{color:#C7D2DC;font-size:15px;margin-top:10px;max-width:52ch}
+
+  /* ---------- clock strip ---------- */
+  .clockstrip{
+    display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    margin:22px 0 8px;background:var(--card);
+  }
+  .clockstrip div{flex:1;padding:10px 8px;text-align:center}
+  .clockstrip .t{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;
+  }
+  .clockstrip .l{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--gray);font-weight:600}
+  .clockstrip div+div{border-left:1px solid var(--line)}
+  .clockstrip .hot{background:#FDF3F2}
+  .clockstrip .hot .t{color:var(--high)}
+  .stripnote{font-size:13px;color:var(--gray);margin-bottom:26px}
+
+  /* ---------- sections ---------- */
+  section{margin-top:40px}
+  .kicker{
+    font-family:'Barlow Condensed',sans-serif;font-weight:600;
+    text-transform:uppercase;letter-spacing:.12em;font-size:14px;color:var(--low);
+  }
+  h2{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:30px;text-transform:uppercase;line-height:1.05;margin:2px 0 12px;
+  }
+  p.lead{color:#3C4A57;margin-bottom:14px}
+
+  /* ---------- rule cards ---------- */
+  .rules{display:grid;gap:10px}
+  .rule{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;display:flex;gap:12px;align-items:flex-start;
+  }
+  .rule b{display:block;font-size:16px}
+  .rule span{font-size:14.5px;color:#4A5866}
+  .dot{
+    flex:0 0 10px;width:10px;height:10px;border-radius:50%;
+    background:var(--low);margin-top:7px;
+  }
+  .rule.crit .dot{background:var(--high)}
+
+  /* ---------- script tickets ---------- */
+  .ticket{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    margin-top:16px;overflow:hidden;
+  }
+  .ticket-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 16px;border-bottom:1px solid var(--line);
+    background:#F7F9FA;
+  }
+  .ticket-head .name{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    text-transform:uppercase;font-size:17px;letter-spacing:.04em;
+  }
+  .ticket-head .when{font-size:12.5px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.06em;text-align:right}
+  .ticket-body{padding:16px}
+  .say{
+    border-left:4px solid var(--low);
+    background:#F3F7FD;
+    padding:12px 14px;border-radius:0 8px 8px 0;
+    font-size:17.5px;font-weight:500;
+    margin:10px 0;
+  }
+  .say .tag,.hook .tag{
+    display:block;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--low);margin-bottom:4px;
+  }
+  .hook{
+    border-left:4px solid var(--high);
+    background:var(--hook-bg);
+    padding:12px 14px;border-radius:0 8px 8px 0;
+    font-size:17.5px;font-weight:500;margin:10px 0;
+  }
+  .hook .tag{color:var(--high)}
+  .why{
+    font-size:14px;color:var(--gray);margin-top:8px;
+  }
+  .why b{color:var(--ink)}
+
+  /* ---------- SMS templates ---------- */
+  .sms{
+    background:#14202B;color:#E8EEF3;border-radius:12px;
+    padding:14px 16px;margin-top:12px;position:relative;
+    font-size:15.5px;
+  }
+  .sms .tag{
+    display:block;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+    font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:#8FB9F0;margin-bottom:6px;padding-right:70px;
+  }
+  .copybtn{
+    position:absolute;top:10px;right:10px;
+    background:#2A3B4C;color:#CBD8E4;border:none;border-radius:6px;
+    font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;
+    padding:6px 10px;cursor:pointer;
+  }
+  .copybtn:hover{background:#39506A}
+  .copybtn:focus-visible{outline:2px solid #8FB9F0;outline-offset:2px}
+
+  /* ---------- decision table ---------- */
+  .decide{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:14px}
+  .drow{display:flex;background:var(--card)}
+  .drow+.drow{border-top:1px solid var(--line)}
+  .drow .if{
+    flex:0 0 42%;padding:12px 14px;font-weight:600;font-size:15px;
+    background:#F7F9FA;border-right:1px solid var(--line);
+  }
+  .drow .then{flex:1;padding:12px 14px;font-size:15px;color:#3C4A57}
+  .drow .then b{color:var(--high)}
+
+  /* ---------- log box ---------- */
+  .logbox{
+    background:var(--card);border:1px dashed #A9B4BE;border-radius:12px;
+    padding:16px;margin-top:14px;font-size:15px;color:#3C4A57;
+  }
+  .logbox b{color:var(--ink)}
+
+  footer{
+    margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+    font-size:13px;color:var(--gray);
+  }
+
+  @media (max-width:480px){
+    h1{font-size:36px}
+    .clockstrip .t{font-size:17px}
+    .clockstrip .l{font-size:10px}
+    .drow{flex-direction:column}
+    .drow .if{flex:auto;border-right:none;border-bottom:1px solid var(--line)}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hwrap">
+    <div class="eyebrow">Mechanical Temp &middot; LSA Battle Plan</div>
+    <h1>The Morning<br>Playbook <span class="red">/ Win the burst</span></h1>
+    <p class="sub">Emergency no-cool customers give the job to whoever is committed and moving first. Every script here does one thing: close the auction before the next callback opens it back up.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="clockstrip">
+    <div class="hot"><div class="t">7–10a</div><div class="l">Capture</div></div>
+    <div><div class="t">10–12</div><div class="l">Diagnose</div></div>
+    <div><div class="t">12–5p</div><div class="l">Repair</div></div>
+    <div><div class="t">Eve</div><div class="l">Follow-up</div></div>
+  </div>
+  <div class="stripnote">The burst hits 7&ndash;10am. Everything about the morning is built to absorb it.</div>
+
+  <!-- ================= RULES ================= -->
+  <section id="rules">
+    <div class="kicker">Structure</div>
+    <h2>Morning Rules (Cooling Season)</h2>
+    <div class="rules">
+      <div class="rule crit"><div class="dot"></div><div><b>Forecast 85&deg;+ &rarr; mornings stay empty.</b><span>No PMs, no FM work orders, no repairs before 11am. The empty slot IS the product — it's what lets you say "45 minutes" at 8:30.</span></div></div>
+      <div class="rule"><div class="dot"></div><div><b>Two trucks, two diagnostics.</b><span>Jason takes one, Brian takes the other. Morning visits are 30–45 min diagnostic sweeps — diagnose, quote, get approval, book the repair, bounce. Repairs stack in the afternoon.</span></div></div>
+      <div class="rule"><div class="dot"></div><div><b>Callback inside 3 minutes. Book inside 90 seconds.</b><span>Lock the slot first. Equipment details come by text after. Every question you ask on call #1 is time they spend answering another contractor.</span></div></div>
+      <div class="rule"><div class="dot"></div><div><b>Quote a range, anchored early.</b><span>"Between 9:30 and 11" beats "11am." Customers hear the front of the range. Never pad to the safe end — 1pm on an 8am call is a lost job.</span></div></div>
+      <div class="rule crit"><div class="dot"></div><div><b>Board full &rarr; pause LSA.</b><span>Once both trucks are committed and you're quoting past the 2-hour window, every new lead is $88 burned. Pause it. Two leads you win beat four you split.</span></div></div>
+      <div class="rule"><div class="dot"></div><div><b>Slow morning = droppable work only.</b><span>Part runs, quote follow-ups, callbacks. Nothing you can't abandon the second the phone rings.</span></div></div>
+    </div>
+  </section>
+
+  <!-- ================= CALLBACK ================= -->
+  <section id="callback">
+    <div class="kicker">Script 1</div>
+    <h2>The Callback</h2>
+    <p class="lead">Goal: locked slot + verbal contract, under 90 seconds. Blue = say it. Red = the hook that makes bailing feel like breaking a promise.</p>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Open &amp; claim</span><span class="when">0:00–0:20</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"Hey, this is Brian with Mechanical Temp — you just called about your AC. I can have a tech at your place between [time] and [time] this morning. Want me to lock that in right now?"</div>
+        <div class="why"><b>Why:</b> You're the owner calling back in 3 minutes with a real window. No diagnostics questions yet. Lock first, details later.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Triage check</span><span class="when">0:20–0:35</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"Quick question — is the house getting dangerously hot? Anybody elderly, little kids, pets?"</div>
+        <div class="why"><b>Why:</b> True emergency = highest-close, highest-ticket call of the day. If yes, this job can bump anything non-urgent on the board.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The lock — money down</span><span class="when">0:35–1:00</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"I'll get you on the board for [window]. I take the $89 diagnostic now by card — it comes straight off the repair — and that locks your slot. Nobody bumps you. I'll text you a payment link right now."</div>
+        <div class="why"><b>Why:</b> Money down closes the auction. A customer with $89 committed doesn't take the 9:10 counter-offer. And whoever won't pay just told you they were always going to jump — before you built a route around them.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The guilt transfer</span><span class="when">1:00–1:20</span></div>
+      <div class="ticket-body">
+        <div class="hook"><span class="tag">The hook</span>"One thing — I'm setting my whole morning around you now. If somebody else gets it fixed first, or you get it handled, no hard feelings at all — just shoot me a text so I don't drive out there for nothing. Deal?"</div>
+        <div class="why"><b>Why:</b> Wait for them to actually say "deal" or "yeah." That word is the contract. Silent no-shows drop hard once they've promised a specific guy out loud. Worst case, you find out it's dead before you burn the drive.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The inoculation</span><span class="when">1:20–1:40</span></div>
+      <div class="ticket-body">
+        <div class="hook"><span class="tag">The hook</span>"Heads up — you probably called a couple other places, so your phone's gonna ring for the next hour and some guy will say he can be there in 30 minutes. Most of those slip — that's just how they win the phone call. You're locked with me and I'll actually be there."</div>
+        <div class="why"><b>Why:</b> You just predicted the exact counter-offer they're about to get. When it comes, it sounds like the sales tactic you called out — not a rescue. This is what protects the 8:35 booking from the 9:10 callback.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Read the close</span><span class="when">Listen</span></div>
+      <div class="ticket-body">
+        <div class="why" style="margin-top:0"><b>"Sounds great" + silence = backup plan.</b> Committed customers ask questions — "do you take card," "what's the fee," "should I do anything before you get here." Instant polite agreement with zero questions means they're back on Google the second you hang up. That's your cue to push the payment link harder or mentally mark the slot as soft.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TEXTS ================= -->
+  <section id="texts">
+    <div class="kicker">Templates</div>
+    <h2>The Text Chain</h2>
+    <p class="lead">Every gap of silence is a window for another contractor. These close the gaps. Tap to copy — swap the brackets.</p>
+
+    <div class="sms"><span class="tag">T1 &middot; Instantly at booking</span><button class="copybtn" data-copy>Copy</button><span class="body">You're locked in with Mechanical Temp for [window] today. [Tech name] is your technician. Payment link for the $89 diagnostic (comes off your repair): [link]. Reply here anytime — this goes straight to Brian.</span></div>
+
+    <div class="sms"><span class="tag">T2 &middot; 90 min before window</span><button class="copybtn" data-copy>Copy</button><span class="body">Morning check-in from Mechanical Temp — [tech] is still on for your [window] window. Reply YES to confirm, or STOP if you're already taken care of so we don't send the truck.</span></div>
+
+    <div class="sms"><span class="tag">T3 &middot; Rolling / 10 min out</span><button class="copybtn" data-copy>Copy</button><span class="body">[Tech] is about 10 minutes out. See you shortly — Mechanical Temp.</span></div>
+
+    <div class="sms"><span class="tag">T4 &middot; Left site, repair pending</span><button class="copybtn" data-copy>Copy</button><span class="body">Here's what happens next: part is ordered tonight, and you'll get a text in the morning with your repair time. You don't need to do anything — Brian, Mechanical Temp.</span></div>
+
+    <div class="sms"><span class="tag">T5 &middot; Same evening, job done</span><button class="copybtn" data-copy>Copy</button><span class="body">Thanks for having us out today. If everything's cooling right, a quick Google review helps us a ton: [link]. Save this number — you're in our system now, so next time you skip the phone tree and come straight to us.</span></div>
+
+    <div class="why" style="margin-top:12px"><b>T2 is the dry-run killer.</b> No reply or STOP = call before rolling the truck. T5 is the anti-LSA play — every direct repeat customer is a lead you didn't pay Google $88 for.</div>
+  </section>
+
+  <!-- ================= COUNTERS ================= -->
+  <section id="counters">
+    <div class="kicker">In the moment</div>
+    <h2>If / Then</h2>
+    <div class="decide">
+      <div class="drow"><div class="if">They say "let me check with my husband/wife and call you back"</div><div class="then">"Totally — I'll hold the [window] slot for 15 minutes. After that it goes to the next call. Text me a thumbs up and you're locked." <b>Deadline keeps you off the maybe pile.</b></div></div>
+      <div class="drow"><div class="if">They admit they already booked someone else</div><div class="then">"No problem. If that guy slips — and a lot do on days like this — text this number and I'll fit you in. Save it either way." <b>You just became the backup for when the 30-minute promise breaks.</b></div></div>
+      <div class="drow"><div class="if">They balk at paying the diagnostic up front</div><div class="then">"No pressure — it just means I can't guarantee the slot if an emergency jumps the line. Want me to pencil you in as flexible instead?" <b>Soft downgrade. Don't build a route around an unpaid slot.</b></div></div>
+      <div class="drow"><div class="if">They say they called a bunch of places</div><div class="then">"Makes sense in this heat. If we're your guy, cancel the others so nobody wastes a trip — and we'll waive the diagnostic when you approve the repair." <b>Names the behavior out loud, rewards exclusivity, only costs you on won jobs.</b></div></div>
+      <div class="drow"><div class="if">Lead #3 calls and both trucks are out</div><div class="then">Quote first-available honestly: "I can be there at [time], and you're first in line if anything opens sooner — I'll text you." <b>If this happens every heat wave, that's the truck-#3 math writing itself.</b></div></div>
+      <div class="drow"><div class="if">Board is full and it's not even 9am</div><div class="then"><b>Pause LSA.</b> Every lead after full is $88 funding somebody else's rat race.</div></div>
+    </div>
+  </section>
+
+  <!-- ================= LOG ================= -->
+  <section id="log">
+    <div class="kicker">Experiment</div>
+    <h2>Log It So It Locks In</h2>
+    <p class="lead">This is a test, not gospel. One line per lead is enough to know in two weeks what's working:</p>
+    <div class="logbox">
+      <b>Per lead:</b> time in &rarr; time called back &rarr; window quoted &rarr; paid diagnostic Y/N &rarr; said "deal" Y/N &rarr; showed/cancelled/ghosted &rarr; won/lost &rarr; ticket $
+      <br><br>
+      <b>What you're looking for:</b> do paid-diagnostic leads ghost less? Does the "deal" hook cut dry runs? What window length still wins? If leads that pay never ghost, push the payment ask harder. If nobody pays but "deal" holds them, drop the fee and keep the hook. Two weeks of lines and the pattern's obvious — and it's a DSM table when you're ready.
+    </div>
+  </section>
+
+  <footer>Mechanical Temp LLC &middot; Morning Playbook v1 &middot; The auction stays open until your truck is in the driveway — or their money is in your pocket.</footer>
+</div>
+
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var body = btn.parentElement.querySelector('.body');
+    var text = body ? body.textContent.trim() : '';
+    function done(){ btn.textContent='Copied'; setTimeout(function(){btn.textContent='Copy';},1500); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){fallback();});
+    } else { fallback(); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done();
+    }
+  });
+});
+</script>
+</body>
+</html>
