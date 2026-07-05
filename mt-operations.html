@@ -100,6 +100,15 @@ button.run{font-family:'Barlow Condensed';font-weight:700;text-transform:upperca
 button.run:hover{background:#6AA2F7}
 button.run:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .runnote{font-size:13px;color:var(--dim)}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.pbtn{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:14px;background:var(--panel2);border:1px solid var(--line);color:var(--dim);border-radius:8px;padding:9px 14px;cursor:pointer}
+.pbtn:hover{color:var(--txt)}
+.pbtn.active{background:#233A56;border-color:#3A5B84;color:var(--txt)}
+.pdesc{font-size:13.5px;color:var(--dim);margin-bottom:16px;min-height:2.4em}
+.pull{border-left:4px solid var(--amber);background:#231A0D;padding:12px 16px;border-radius:0 8px 8px 0;font-size:18px;font-weight:500;margin:14px 0;font-style:italic}
+.pitchp{color:var(--dim);font-size:15.5px;margin-bottom:12px}
+.pitchp b{color:var(--txt)}
+.pnum{font-family:'JetBrains Mono';font-weight:700;color:var(--amber);margin-right:8px}
 .verdict{display:none;background:linear-gradient(180deg,#12233A,#0F1D30);border:1px solid #274566;border-radius:12px;padding:20px;margin-top:24px;text-align:center}
 .verdict .big{font-family:'JetBrains Mono';font-weight:700;font-size:36px;color:var(--green)}
 .verdict .big.neg{color:var(--red)}
@@ -143,6 +152,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-si
   <button class="tabbtn active" data-tab="playbook">Playbook</button>
   <button class="tabbtn" data-tab="week">The Week</button>
   <button class="tabbtn" data-tab="sim">Simulator</button>
+  <button class="tabbtn" data-tab="pitch">The Pitch</button>
 </div></nav>
 
 <div class="wrap">
@@ -303,6 +313,13 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-si
   <section class="panel">
     <h2><span class="k">Monte Carlo · 12 months, identical lead streams</span>MT Model vs Traditional</h2>
     <p class="lead">Both schedules face the same weekday customers — same call times, same patience, same tickets. Traditional's weekend LSA is off, so it never sees (or pays for) weekend leads. Argue with the assumptions at the bottom.</p>
+    <div class="presets">
+      <button class="pbtn active" data-p="solo">Solo · Alternate</button>
+      <button class="pbtn" data-p="jason">Jason Weekends</button>
+      <button class="pbtn" data-p="surge">Surge · 2nd Truck When Hot</button>
+      <button class="pbtn" data-p="full">Full Weekend · 2 Trucks</button>
+    </div>
+    <div class="pdesc" id="pdesc">One truck covers weekends, you and Jason alternate. Jason earns his cut on the weekends he works (half). Baseline.</div>
     <div class="controls">
       <div class="ctl"><label>Hot days this month (88°+)<span class="val" id="v_hot">14</span></label><input type="range" id="s_hot" min="4" max="26" value="14"></div>
       <div class="ctl"><label>Weekday leads (hot day) · low budget<span class="val" id="v_wd">2.5</span></label><input type="range" id="s_wd" min="1" max="6" step="0.5" value="2.5"></div>
@@ -311,6 +328,7 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-si
       <div class="ctl"><label>Average repair ticket (regular)<span class="val" id="v_ticket">$520</span></label><input type="range" id="s_ticket" min="250" max="900" step="10" value="520"></div>
       <div class="ctl"><label>Emergency rate uplift<span class="val" id="v_prem">35%</span></label><input type="range" id="s_prem" min="0" max="75" step="5" value="35"></div>
       <div class="ctl"><label>Cost per LSA lead<span class="val" id="v_cost">$88</span></label><input type="range" id="s_cost" min="50" max="130" step="2" value="88"></div>
+      <div class="ctl"><label>Jason's weekend cut<span class="val" id="v_cut">13%</span></label><input type="range" id="s_cut" min="5" max="25" value="13"></div>
     </div>
     <div class="runrow">
       <button class="run" id="run">Run Simulation</button>
@@ -359,7 +377,49 @@ footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-si
   </details>
 </div>
 
-<footer>Mechanical Temp LLC · MT Operations v1 · Playbook + Week + Simulator</footer>
+<!-- ================================================================ PITCH -->
+<div class="tab" id="tab-pitch">
+  <section class="panel">
+    <h2><span class="k">Burst Dispatch™ · The MT Method</span>The Schedule We Invented Over a Heat Wave</h2>
+    <p class="pitchp">Every HVAC company in Metro Detroit runs the same schedule: two trucks, 8 to 4, Monday through Friday, weekends for emergencies you grumble about. We looked at when customers actually break down — and rebuilt the whole week around <b>their</b> clock instead of ours.</p>
+    <div class="pull">"Demand isn't flat. It's two spikes and a weekend. So why is every truck schedule a flat line?"</div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">01 · The problem</span>The Rat Race Is a Timing Problem</h2>
+    <p class="pitchp">An emergency no-cool customer calls four companies and hires whoever commits to the earliest credible arrival. That auction stays open until a truck is physically in the driveway. Call back in three minutes and quote 1pm? You lose to the guy quoting 10:30 — <b>the fight is lost at scheduling, not at the phone.</b></p>
+    <p class="pitchp">And the calls don't trickle in. They come in two waves — <b>wake-up-hot (7–10am)</b> and <b>come-home-hot (4–7pm)</b> — because people only discover a dead AC when they're home. Weekends, they're home all day: demand runs continuous while half the market's vans sit parked.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">02 · The method</span>Five Rules</h2>
+    <p class="pitchp"><span class="pnum">1</span><b>Complete &amp; Restart.</b> Mornings are pure emergency calls at regular rate — diagnose, fix, invoice, done by 1. Then a hard break. Then a fresh restart at 4 for the second wave. Same total hours as the 8–4 grind, placed where the calls are.</p>
+    <p class="pitchp"><span class="pnum">2</span><b>The dead zone is a firewall.</b> 1–4pm holds only droppable work — FM, parts, office. Other shops stagger techs and feed them overflow until the evening guy is cooked by 5. Our evening truck arrives at the second burst rested, with an empty board. That's the product.</p>
+    <p class="pitchp"><span class="pnum">3</span><b>Premium hours are the best inventory, not the punishment.</b> After 4pm and all weekend, competition thins out and rates go to emergency pricing — quoted straight, with "tomorrow at standard rate" always on the table so the customer picks the premium themselves.</p>
+    <p class="pitchp"><span class="pnum">4</span><b>The ad budget rides the same curve.</b> LSA spend throttled low on contested weekday mornings, cranked on underpriced weekends, paused the moment the board is full. Buy leads where you win them.</p>
+    <p class="pitchp"><span class="pnum">5</span><b>Money down closes the auction.</b> Diagnostic collected at booking, confirm texts before rolling, "text me if you get it handled — deal?" on every call. Ghosts and dry runs go to nearly zero, and a booked customer stops shopping.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">03 · The moat</span>Why Nobody Copies This</h2>
+    <p class="pitchp">It's not a secret — it's a trade the big shops <b>structurally can't take</b>. Their techs expect 8–4. Their dashboards punish empty morning slots as wasted utilization. Their culture treats on-call as the misery rotation you dump on the new guy. Changing any of that in a ten-truck shop is a mutiny; in a two-man shop where one man owns the P&amp;L, it's a Tuesday decision.</p>
+    <div class="pull">"Everyone can see the weekend is underserved. Almost no one is organizationally shaped to serve it."</div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">04 · For the tech</span>What's In It for the Man in the Truck</h2>
+    <p class="pitchp">Weekdays barely change: 8–4, clean morning service calls, FM in the afternoon. The upgrade is the weekend: every weekend ticket bills at emergency rates, and the tech working it earns <b>a cut of every ticket he writes</b> — money that only exists because we're open when nobody else is. A good hot Saturday should beat two regular weekdays, and when you're off, you're actually off: the other truck has it, no phone.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">05 · The proof</span>Run It Like a Trade</h2>
+    <p class="pitchp">The Simulator tab runs both schedules against identical customers, 12 simulated months at a time — the burst model has never lost a configuration, sandbagged or not. But a backtest is a hypothesis, not a fill. So the rollout is an experiment: playbook on every call, weekend LSA on, one log line per lead, two weeks. Then the log recalibrates the model with real numbers and the schedule earns its next decision.</p>
+    <div class="pull">"The auction stays open until your truck is in the driveway — or their money is in your pocket."</div>
+    <p class="pitchp" style="margin-top:14px;font-size:13.5px">Burst Dispatch™ — invented at 23093 Telegraph Rd, sometime between a July heat wave and a tee time. Patent not pending; the moat is that you won't do it.</p>
+  </section>
+</div>
+
+<footer>Mechanical Temp LLC · MT Operations v2 · Playbook + Week + Simulator + Pitch</footer>
 </div>
 
 <script>
@@ -389,6 +449,20 @@ document.querySelectorAll('[data-copy]').forEach(function(btn){
     }
   });
 });
+
+// ---------- presets ----------
+let curPreset='solo';
+const PDESCS={
+  solo:'One truck covers weekends, you and Jason alternate. Jason earns his cut on the weekends he works (half). Baseline.',
+  jason:'Jason owns every weekend at his cut. Your weekends are fully off — the model runs without you Sat/Sun.',
+  surge:'Jason owns weekends; on 88°+ weekend days you roll as the second truck to capture the overflow. The holster play.',
+  full:'Both trucks every Saturday and Sunday, budget cranked. The ceiling case — what the weekend market saturates at.'
+};
+document.querySelectorAll('.pbtn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.pbtn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');curPreset=b.dataset.p;
+  document.getElementById('pdesc').textContent=PDESCS[curPreset];
+}));
 
 // ---------- sim engine ----------
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -451,39 +525,47 @@ function winProb(waitH,thin){
 
 const TRAVEL=.4,DIAG=.7,REPAIR=1.5;
 
-function trucksFor(sched,dow){
-  const we=dow>=5;
+function trucksFor(sched,day,preset){
+  const we=day.dow>=5, hot=day.temp>=88;
   if(sched==='A')return we?[]:[truck('Brian',[[8,16]]),truck('Jason',[[8,16]])];
-  if(we)return[truck('On-call',[[8,20]])];
-  return[truck('Brian',[[8,13],[16,20]]),truck('Jason',[[8,16]])];
+  if(!we)return[truck('Brian',[[8,13],[16,20]]),truck('Jason',[[8,16]])];
+  if(preset==='solo')return[truck('On-call',[[8,20]])];
+  if(preset==='jason')return[truck('Jason',[[8,20]])];
+  if(preset==='surge')return hot?[truck('Jason',[[8,20]]),truck('Brian',[[8,20]])]:[truck('Jason',[[8,20]])];
+  return[truck('Jason',[[8,20]]),truck('Brian',[[8,20]])];
 }
-function ownerHours(sched,dow){
-  const we=dow>=5;
+function ownerHoursFor(sched,day,preset){
+  const we=day.dow>=5, hot=day.temp>=88;
   if(sched==='A')return we?0:8;
-  return we?6:9;
+  if(!we)return 9;
+  if(preset==='solo')return 6;
+  if(preset==='jason')return 0;
+  if(preset==='surge')return hot?12:0;
+  return 12;
 }
-
 function simMonth(sched,month,P,record){
   const S={rev:0,fmRev:0,leadSpend:0,leadsIn:0,leadsPaid:0,wins:0,dry:0,prem:0,presold:0,
-           wkndRev:0,ownH:0,invoices:0,offSum:0,offN:0};
+           wkndRev:0,ownH:0,invoices:0,offSum:0,offN:0,jasonWkndRev:0,jasonPay:0};
   const mt=sched!=='A';
   let carry=[];
   let bestWD=null,bWDt=-1,bestWE=null,bWEt=-1;
 
-  const invoice=(L,emergency,isWknd)=>{
+  const attr=(amt,isWknd,tkName)=>{if(isWknd&&tkName==='Jason')S.jasonWkndRev+=amt};
+
+  const invoice=(L,emergency,isWknd,tkName)=>{
     const up=emergency?P.prem:0;
     let amt=89*(1+up);
     S.prem+=89*up;
     if(L.closeRoll<P.close){amt+=L.ticket*(1+up);S.prem+=L.ticket*up}
     S.rev+=amt;S.invoices++;
-    if(isWknd)S.wkndRev+=amt;
+    if(isWknd){S.wkndRev+=amt;attr(amt,true,tkName)}
     return L.closeRoll<P.close;
   };
 
   for(let d=0;d<30;d++){
     const day=month[d];
-    const trucks=trucksFor(sched,day.dow);
-    S.ownH+=ownerHours(sched,day.dow);
+    const trucks=trucksFor(sched,day,P.preset);
+    S.ownH+=ownerHoursFor(sched,day,P.preset);
     if(!day.weekend&&trucks.length){
       const jason=trucks.find(t=>t.name==='Jason');
       if(jason){book(jason,sched==='A'?8:13,3,'fm');S.fmRev+=3*140}
@@ -502,7 +584,7 @@ function simMonth(sched,month,P,record){
         const up=c.emergency?P.prem:0;
         const amt=c.lead.ticket*(1+up);
         S.rev+=amt;S.prem+=c.lead.ticket*up;S.invoices++;
-        if(day.weekend)S.wkndRev+=amt;
+        if(day.weekend){S.wkndRev+=amt;attr(amt,true,pl.tk.name)}
       }else{
         if(c.lead.lockRoll<0.4)continue;
         const dur=TRAVEL+DIAG+(c.lead.partsOnTruck?REPAIR:0);
@@ -510,7 +592,7 @@ function simMonth(sched,month,P,record){
         for(const tk of trucks){const s=findSlot(tk,dur,8);if(s!=null&&(pl==null||s<pl.s))pl={tk,s}}
         if(!pl){carry.push(c);continue}
         S.wins++;
-        const closed=invoice(c.lead,false,day.weekend);
+        const closed=invoice(c.lead,false,day.weekend,pl.tk.name);
         book(pl.tk,pl.s,dur,closed&&c.lead.partsOnTruck?'job':'diag');
         if(closed&&!c.lead.partsOnTruck)carry.push({kind:'repair',lead:c.lead,emergency:false});
       }
@@ -553,9 +635,8 @@ function simMonth(sched,month,P,record){
       }
       S.wins++;
       const fullVisit=best.dur>TRAVEL+DIAG+1e-9;
-      const closed=invoice(L,emergency,day.weekend);
-      const type=emergency?'prem':'job';
-      book(best.tk,best.s,best.dur,closed?type:'diag');
+      const closed=invoice(L,emergency,day.weekend,best.tk.name);
+      book(best.tk,best.s,best.dur,closed?(emergency?'prem':'job'):'diag');
       if(closed&&(!L.partsOnTruck||!fullVisit)){
         const dur2=TRAVEL+REPAIR;
         let pl=null;
@@ -570,7 +651,9 @@ function simMonth(sched,month,P,record){
       if(!day.weekend&&day.temp>bWDt){bWDt=day.temp;bestWD=snap(trucks,day)}
     }
   }
-  S.net=S.rev+S.fmRev-S.leadSpend;
+  if(mt&&P.preset==='solo')S.jasonWkndRev=S.wkndRev*0.5;
+  S.jasonPay=mt?P.cut*S.jasonWkndRev:0;
+  S.net=S.rev+S.fmRev-S.leadSpend-S.jasonPay;
   S.avgWait=S.offN?S.offSum/S.offN:0;
   if(record){S.sampleWD=bestWD;S.sampleWE=bestWE}
   return S;
@@ -579,14 +662,15 @@ function simMonth(sched,month,P,record){
 
 // ---------- run + render ----------
 const $=id=>document.getElementById(id);
-[['s_hot','v_hot',v=>v],['s_wd','v_wd',v=>(+v).toFixed(1)],['s_we','v_we',v=>(+v).toFixed(1)],['s_close','v_close',v=>v+'%'],['s_ticket','v_ticket',v=>'$'+v],['s_prem','v_prem',v=>v+'%'],['s_cost','v_cost',v=>'$'+v]]
+[['s_hot','v_hot',v=>v],['s_wd','v_wd',v=>(+v).toFixed(1)],['s_we','v_we',v=>(+v).toFixed(1)],['s_close','v_close',v=>v+'%'],['s_ticket','v_ticket',v=>'$'+v],['s_prem','v_prem',v=>v+'%'],['s_cost','v_cost',v=>'$'+v],['s_cut','v_cut',v=>v+'%']]
 .forEach(([s,v,f])=>{$(s).addEventListener('input',e=>$(v).textContent=f(e.target.value))});
 
 $('run').addEventListener('click',()=>{
   const P={hotDays:+$('s_hot').value,wdLeads:+$('s_wd').value,weLeads:+$('s_we').value,
            close:+$('s_close').value/100,ticket:+$('s_ticket').value,
-           prem:+$('s_prem').value/100,leadCost:+$('s_cost').value};
-  const ITER=12,keys=['rev','fmRev','leadSpend','leadsIn','leadsPaid','wins','dry','prem','presold','net','wkndRev','ownH','invoices','avgWait'];
+           prem:+$('s_prem').value/100,leadCost:+$('s_cost').value,
+           preset:curPreset,cut:+$('s_cut').value/100};
+  const ITER=12,keys=['rev','fmRev','leadSpend','leadsIn','leadsPaid','wins','dry','prem','presold','net','wkndRev','ownH','invoices','avgWait','jasonWkndRev','jasonPay'];
   const agg={A:{},D:{}};['A','D'].forEach(s=>keys.forEach(k=>agg[s][k]=0));
   let samples=null;
   const seed=Math.floor(Math.random()*1e9);
@@ -605,7 +689,7 @@ function render(g,P,R){
   const d=g.D.net-g.A.net;
   const el=$('delta');el.textContent=(d>=0?'+':'−')+fmt$(Math.abs(d));el.className='big'+(d<0?' neg':'');
   $('deltacap').textContent=(d>=0?'Extra':'Less')+' net per month with the MT model ('+(d>=0?'+':'')+Math.round(d/Math.max(g.A.net,1)*100)+'%)';
-  $('deltasub').innerHTML='<b>'+fmt$(g.D.prem)+'</b> of that is pure emergency-rate uplift · <b>'+fmt$(g.D.wkndRev)+'</b> earned on weekends Traditional never sees · <b>'+Math.round(g.D.ownH)+' owner-hours</b> vs '+Math.round(g.A.ownH)+' ('+fmt$(g.D.net/Math.max(g.D.ownH,1))+'/hr vs '+fmt$(g.A.net/Math.max(g.A.ownH,1))+'/hr).';
+  $('deltasub').innerHTML='<b>'+fmt$(g.D.wkndRev)+'</b> weekend revenue · <b>'+fmt$(g.D.jasonPay)+"</b> to Jason as his weekend cut · <b>"+Math.round(g.D.ownH)+' owner-hours</b> vs '+Math.round(g.A.ownH)+' ('+fmt$(g.D.net/Math.max(g.D.ownH,1))+'/hr vs '+fmt$(g.A.net/Math.max(g.A.ownH,1))+'/hr) · emergency uplift '+fmt$(g.D.prem)+'.';
   $('verdict').style.display='block';
 
   const row=(label,a,b,best)=>`<tr><td>${label}</td><td class="${best==='a'?'best':''}">${a}</td><td class="${best==='d'?'best':''}">${b}</td></tr>`;
@@ -621,10 +705,11 @@ function render(g,P,R){
     row('Parts returns next AM (pre-sold)',A.presold.toFixed(1),D.presold.toFixed(1),null)+
     row('Emergency-rate uplift collected',fmt$(A.prem),fmt$(D.prem),D.prem>A.prem?'d':'a')+
     row('Weekend revenue',fmt$(A.wkndRev),fmt$(D.wkndRev),D.wkndRev>A.wkndRev?'d':'a')+
+    row("Jason's weekend earnings (cut)",fmt$(A.jasonPay),fmt$(D.jasonPay),D.jasonPay>0?'d':null)+
     row('Service revenue',fmt$(A.rev),fmt$(D.rev),null)+
     row('FM revenue (equal hours)',fmt$(A.fmRev),fmt$(D.fmRev),null)+
     row('Owner hours on the clock',r0(A.ownH),r0(D.ownH),A.ownH<D.ownH?'a':'d')+
-    `<tr class="net"><td>Net after lead spend</td><td>${fmt$(A.net)}</td><td class="best">${fmt$(D.net)}</td></tr>`;
+    `<tr class="net"><td>Net after lead spend &amp; Jason's cut</td><td>${fmt$(A.net)}</td><td class="best">${fmt$(D.net)}</td></tr>`;
   $('score').style.display='block';
 
   const H0=6,H1=21,pctH=h=>((clamp(h,H0,H1)-H0)/(H1-H0)*100);
