@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT Operations — Playbook · Week · Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1420; --panel:#101E2E; --panel2:#0D1826; --line:#1C2E42;
+  --txt:#D7E2ED; --dim:#7C8FA3; --blue:#4C8DF5; --red:#E4584A;
+  --green:#3FB97C; --amber:#E8A33D; --gray:#3A4C60;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:16.5px;line-height:1.55}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px 90px}
+header{padding:26px 16px 0;max-width:980px;margin:0 auto}
+.eyebrow{font-family:'Barlow Condensed';font-weight:600;letter-spacing:.15em;text-transform:uppercase;font-size:13px;color:var(--blue)}
+h1{font-family:'Barlow Condensed';font-weight:700;font-size:40px;text-transform:uppercase;line-height:1.02;margin-top:4px}
+h1 .a{color:var(--amber)}
+.sub{color:var(--dim);font-size:15px;margin-top:8px;max-width:66ch}
+
+/* tabs */
+nav{position:sticky;top:0;z-index:50;background:rgba(11,20,32,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);margin-top:18px}
+.tabs{max-width:980px;margin:0 auto;display:flex;padding:0 16px}
+.tabbtn{flex:1;background:none;border:none;color:var(--dim);cursor:pointer;
+  font-family:'Barlow Condensed';font-weight:700;font-size:17px;letter-spacing:.08em;text-transform:uppercase;
+  padding:14px 6px;border-bottom:3px solid transparent}
+.tabbtn:hover{color:var(--txt)}
+.tabbtn.active{color:var(--txt);border-bottom-color:var(--amber)}
+.tab{display:none}
+.tab.active{display:block}
+
+h2{font-family:'Barlow Condensed';font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px}
+h2 .k{color:var(--blue);font-size:14px;letter-spacing:.12em;display:block;font-weight:600}
+section{margin-top:34px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+p.lead{color:var(--dim);margin-bottom:14px;font-size:15px}
+
+/* ---------- playbook ---------- */
+.ticket{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:16px;overflow:hidden}
+.ticket-head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.ticket-head .name{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;font-size:17px;letter-spacing:.04em}
+.ticket-head .when{font-size:12.5px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em;text-align:right}
+.ticket-body{padding:16px}
+.say{border-left:4px solid var(--blue);background:#12233A;padding:12px 14px;border-radius:0 8px 8px 0;font-size:17.5px;font-weight:500;margin:10px 0}
+.say .tag,.hook .tag{display:block;font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.hook{border-left:4px solid var(--red);background:#291614;padding:12px 14px;border-radius:0 8px 8px 0;font-size:17.5px;font-weight:500;margin:10px 0}
+.hook .tag{color:#F08A7E}
+.why{font-size:14px;color:var(--dim);margin-top:8px}
+.why b{color:var(--txt)}
+
+.sms{background:#060D16;border:1px solid var(--line);color:#E8EEF3;border-radius:12px;padding:14px 16px;margin-top:12px;position:relative;font-size:15.5px}
+.sms .tag{display:block;font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8FB9F0;margin-bottom:6px;padding-right:70px}
+.copybtn{position:absolute;top:10px;right:10px;background:#1C2E42;color:#CBD8E4;border:none;border-radius:6px;font-family:'Barlow',sans-serif;font-weight:600;font-size:12px;padding:6px 10px;cursor:pointer}
+.copybtn:hover{background:#2A415C}
+.copybtn:focus-visible{outline:2px solid #8FB9F0;outline-offset:2px}
+
+.decide{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:14px}
+.drow{display:flex;background:var(--panel)}
+.drow+.drow{border-top:1px solid var(--line)}
+.drow .if{flex:0 0 42%;padding:12px 14px;font-weight:600;font-size:15px;background:var(--panel2);border-right:1px solid var(--line)}
+.drow .then{flex:1;padding:12px 14px;font-size:15px;color:var(--dim)}
+.drow .then b{color:var(--amber)}
+.logbox{background:var(--panel);border:1px dashed #3E5570;border-radius:12px;padding:16px;margin-top:14px;font-size:15px;color:var(--dim)}
+.logbox b{color:var(--txt)}
+
+/* ---------- week ---------- */
+.lane{position:relative;height:46px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;margin-bottom:6px;overflow:hidden}
+.lane .nm{position:absolute;left:8px;top:14px;font-family:'Barlow Condensed';font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);z-index:2;text-shadow:0 0 4px #0B1420}
+.lane.slim{height:32px}
+.lane.slim .nm{top:7px}
+.lane.empty .nm{color:#54687D}
+.blk{position:absolute;top:4px;bottom:4px;border-radius:4px;opacity:.92;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.blk span{font-family:'Barlow Condensed';font-weight:600;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#06111F;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;padding:0 4px}
+.blk.job{background:var(--green)} .blk.diag{background:var(--blue)}
+.blk.prem{background:var(--amber)} .blk.fm{background:var(--gray)}
+.blk.fm span{color:#C7D2DC}
+.blk.off2{background:transparent;border:1px dashed #33475C}
+.blk.off2 span{color:#7C8FA3}
+.blk.dry{background:transparent;border:2px dashed var(--red)}
+.blk.lock{background:var(--green);outline:2px solid var(--amber);outline-offset:-2px}
+.offshade{position:absolute;top:0;bottom:0;background:rgba(0,0,0,.42);z-index:1}
+.axis{position:relative;height:18px;font-family:'JetBrains Mono';font-size:11px;color:var(--dim);margin-bottom:6px}
+.axis span{position:absolute;transform:translateX(-50%)}
+.h4{font-family:'Barlow Condensed';font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:12px 0 4px}
+.schedrules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px}
+.srule{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--dim)}
+.srule b{display:block;font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;color:var(--txt);margin-bottom:2px}
+.srule.hot b{color:var(--amber)}
+
+/* ---------- sim ---------- */
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px 24px}
+.ctl label{display:flex;justify-content:space-between;font-size:13.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;font-family:'Barlow Condensed';font-weight:600}
+.ctl .val{font-family:'JetBrains Mono';font-weight:700;color:var(--txt);font-size:14px}
+input[type=range]{width:100%;margin-top:8px;accent-color:var(--blue);height:22px}
+.runrow{display:flex;gap:12px;align-items:center;margin-top:18px;flex-wrap:wrap}
+button.run{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:18px;background:var(--blue);color:#06111F;border:none;border-radius:8px;padding:12px 28px;cursor:pointer}
+button.run:hover{background:#6AA2F7}
+button.run:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.runnote{font-size:13px;color:var(--dim)}
+.verdict{display:none;background:linear-gradient(180deg,#12233A,#0F1D30);border:1px solid #274566;border-radius:12px;padding:20px;margin-top:24px;text-align:center}
+.verdict .big{font-family:'JetBrains Mono';font-weight:700;font-size:36px;color:var(--green)}
+.verdict .big.neg{color:var(--red)}
+.verdict .cap{font-family:'Barlow Condensed';font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:14px;color:var(--dim);margin-top:4px}
+.verdict .sub2{font-size:14px;color:var(--dim);margin-top:10px}
+.verdict .sub2 b{color:var(--txt)}
+.score{display:none;margin-top:24px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;color:var(--dim);white-space:normal}
+th{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:15px;color:var(--txt)}
+th.a{color:#9FB4CA} th.d{color:var(--amber)}
+td{font-family:'JetBrains Mono';font-size:14px}
+td.best{color:var(--green);font-weight:700}
+tr.net td{border-top:2px solid #2A4666;font-weight:700;font-size:15px}
+.tl{display:none;margin-top:24px}
+.tl h3{font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;font-size:19px;letter-spacing:.05em;margin:18px 0 8px}
+.tl h3 .temp{color:var(--red);font-family:'JetBrains Mono';font-size:15px}
+.tl .h4 i{font-style:normal;color:var(--txt)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--dim);margin-top:10px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend .dry i{background:transparent;border:2px dashed var(--red)}
+details{margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+summary{cursor:pointer;padding:14px 18px;font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:16px}
+details .inner{padding:0 18px 18px;font-size:14.5px;color:var(--dim)}
+details .inner b{color:var(--txt)}
+details .inner p{margin-bottom:8px}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
+@media(max-width:560px){h1{font-size:30px}.verdict .big{font-size:28px}.tabbtn{font-size:14px;letter-spacing:.04em}.drow{flex-direction:column}.drow .if{flex:auto;border-right:none;border-bottom:1px solid var(--line)}.blk span{font-size:10px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Mechanical Temp LLC</div>
+  <h1>MT <span class="a">Operations</span></h1>
+  <p class="sub">The whole play in one page: what to say on every call, how the week runs, and the simulator that says why. The auction stays open until your truck is in the driveway — or their money is in your pocket.</p>
+</header>
+
+<nav><div class="tabs">
+  <button class="tabbtn active" data-tab="playbook">Playbook</button>
+  <button class="tabbtn" data-tab="week">The Week</button>
+  <button class="tabbtn" data-tab="sim">Simulator</button>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ================================================================ PLAYBOOK -->
+<div class="tab active" id="tab-playbook">
+
+  <section>
+    <h2><span class="k">Script · run top to bottom, every callback</span>The 90-Second Callback</h2>
+    <p class="lead">One continuous call, not a menu. Blue = say it. Red = the hook. If a call goes sideways and you only land two things, land <b style="color:var(--txt)">the lock</b> and <b style="color:var(--txt)">the "deal?"</b></p>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Open &amp; claim</span><span class="when">0:00–0:20</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"Hey, this is Brian with Mechanical Temp — you just called about your AC. I can have a tech at your place between [time] and [time]. Want me to lock that in right now?"</div>
+        <div class="why"><b>Why:</b> Owner calling back in 3 minutes with a real window. Quote a range anchored early — "9:30 to 11" beats "11." Lock first; equipment details come by text after.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Triage check</span><span class="when">0:20–0:35</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"Quick question — is the house getting dangerously hot? Anybody elderly, little kids, pets?"</div>
+        <div class="why"><b>Why:</b> True emergency = highest-close, highest-ticket call of the day. Skip only when it's obviously not needed (commercial, or they already told you).</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The lock — money down</span><span class="when">0:35–1:00</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"So the diagnostic visit is $89 — that's standard, and it comes straight off the repair. I just collect it at booking instead of at the door, because that's what locks your slot. Nobody bumps you. Texting you the link now."</div>
+        <div class="why"><b>Why:</b> Same money, relocated — "standard" and "instead of at the door" make it timing, not an extra charge. Money down closes the auction: a customer with $89 committed doesn't take the 9:10 counter-offer. Whoever won't pay just told you they were always going to jump. <b>Fallback if bookings stall:</b> a $49 deposit — "deposit" sounds refundable, and sunk cost doesn't scale with dollars.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The guilt transfer</span><span class="when">1:00–1:20</span></div>
+      <div class="ticket-body">
+        <div class="hook"><span class="tag">The hook</span>"One thing — I'm setting my whole morning around you now. If somebody else gets it fixed first, or you get it handled, no hard feelings at all — just shoot me a text so I don't drive out there for nothing. Deal?"</div>
+        <div class="why"><b>Why:</b> Wait for them to actually say "deal" or "yeah." That word is the contract. Silent no-shows drop hard once they've promised a specific guy out loud.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">The inoculation</span><span class="when">1:20–1:40</span></div>
+      <div class="ticket-body">
+        <div class="hook"><span class="tag">The hook</span>"Heads up — you probably called a couple other places, so your phone's gonna ring for the next hour and some guy will say he can be there in 30 minutes. Most of those slip — that's just how they win the phone call. You're locked with me and I'll actually be there."</div>
+        <div class="why"><b>Why:</b> You just predicted the exact counter-offer they're about to get. When it comes, it sounds like the sales tactic you called out — not a rescue. Evening version: "your phone might still ring tonight."</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Evening variant (after 4p / weekends)</span><span class="when">Rate quote</span></div>
+      <div class="ticket-body">
+        <div class="say"><span class="tag">Say it</span>"I can have you looked at tonight — evenings run at our emergency rate. Or first thing tomorrow at the standard rate. Which works for you?"</div>
+        <div class="why"><b>Why:</b> Let <b>them</b> pick the premium — it never feels like gouging when tomorrow-cheaper was on the table. Most no-cools in a hot house pick tonight. If the part's not on the truck: collect the diagnostic at the door, get the quote signed, part return is tomorrow's first slot — a pre-sold job, not a maybe.</div>
+      </div>
+    </div>
+
+    <div class="ticket">
+      <div class="ticket-head"><span class="name">Read the close</span><span class="when">Listen</span></div>
+      <div class="ticket-body">
+        <div class="why" style="margin-top:0"><b>"Sounds great" + silence = backup plan.</b> Committed customers ask questions — "do you take card," "what's the fee," "should I do anything before you get here." Instant polite agreement with zero questions means they're back on Google the second you hang up. Push the payment link harder, or mark the slot soft.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="k">Templates · tap to copy</span>The Text Chain</h2>
+    <p class="lead">Every gap of silence is a window for another contractor. These close the gaps.</p>
+
+    <div class="sms"><span class="tag">T1 · Instantly at booking</span><button class="copybtn" data-copy>Copy</button><span class="body">You're locked in with Mechanical Temp for [window] today. [Tech name] is your technician. Payment link for the $89 diagnostic (comes off your repair): [link]. Reply here anytime — this goes straight to Brian.</span></div>
+
+    <div class="sms"><span class="tag">T2 · 90 min before window — the dry-run killer</span><button class="copybtn" data-copy>Copy</button><span class="body">Morning check-in from Mechanical Temp — [tech] is still on for your [window] window. Reply YES to confirm, or STOP if you're already taken care of so we don't send the truck.</span></div>
+
+    <div class="sms"><span class="tag">T3 · Rolling / 10 min out</span><button class="copybtn" data-copy>Copy</button><span class="body">[Tech] is about 10 minutes out. See you shortly — Mechanical Temp.</span></div>
+
+    <div class="sms"><span class="tag">T4 · Left site, part return tomorrow</span><button class="copybtn" data-copy>Copy</button><span class="body">Here's what happens next: your part is ordered tonight and you're our first stop in the morning — [time]. You don't need to do anything. — Brian, Mechanical Temp</span></div>
+
+    <div class="sms"><span class="tag">T5 · Same evening, job done</span><button class="copybtn" data-copy>Copy</button><span class="body">Thanks for having us out today. If everything's cooling right, a quick Google review helps us a ton: [link]. Save this number — you're in our system now, so next time you skip the phone tree and come straight to us.</span></div>
+
+    <div class="why" style="margin-top:12px"><b>T2:</b> no reply or STOP = call before rolling the truck. <b>T5</b> is the anti-LSA play — every direct repeat customer is a lead you didn't pay Google $88 for.</div>
+  </section>
+
+  <section>
+    <h2><span class="k">In the moment</span>If / Then</h2>
+    <div class="decide">
+      <div class="drow"><div class="if">"Let me check with my husband/wife and call you back"</div><div class="then">"Totally — I'll hold the [window] slot for 15 minutes. After that it goes to the next call. Text me a thumbs up and you're locked." <b>Deadline keeps you off the maybe pile.</b></div></div>
+      <div class="drow"><div class="if">They already booked someone else</div><div class="then">"No problem. If that guy slips — and a lot do on days like this — text this number and I'll fit you in. Save it either way." <b>You just became the backup for when the 30-minute promise breaks.</b></div></div>
+      <div class="drow"><div class="if">They balk at paying the diagnostic up front</div><div class="then">"No pressure — it just means I can't guarantee the slot if an emergency jumps the line. Want me to pencil you in as flexible instead?" <b>Soft downgrade. Don't build a route around an unpaid slot.</b></div></div>
+      <div class="drow"><div class="if">"I called a bunch of places"</div><div class="then">"Makes sense in this heat. If we're your guy, cancel the others so nobody wastes a trip — and we'll waive the diagnostic when you approve the repair." <b>Names the behavior, rewards exclusivity, only costs you on won jobs.</b></div></div>
+      <div class="drow"><div class="if">Lead calls and both trucks are committed</div><div class="then">Quote first-available honestly: "I can be there at [time], and you're first in line if anything opens sooner — I'll text you." <b>If this happens every heat wave, that's the truck-#3 math writing itself.</b></div></div>
+      <div class="drow"><div class="if">Board full before 9am</div><div class="then"><b>Pause LSA.</b> Every lead after full is $88 funding somebody else's rat race.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="k">Experiment</span>Log It So It Locks In</h2>
+    <div class="logbox">
+      <b>Per lead, one line:</b> time in → time called back → window quoted → paid diagnostic Y/N → said "deal" Y/N → showed/cancelled/ghosted → won/lost → ticket $ → regular/emergency rate
+      <br><br>
+      <b>What you're looking for:</b> do paid leads ghost less? Does "deal" cut dry runs? Did Saturday out-earn the average weekday? How many leads died because the board was jammed? Two weeks of lines answers all four — and recalibrates the Simulator tab with your real dice instead of guessed ones.
+    </div>
+  </section>
+</div>
+
+<!-- ================================================================ WEEK -->
+<div class="tab" id="tab-week">
+  <section class="panel">
+    <h2><span class="k">Structure · cooling season</span>The MT Week</h2>
+    <p class="lead">Complete the job in the morning at regular rate. Break in the dead zone. Restart at 4 on emergency rates. Weekends are all emergency rate, one truck, alternating.</p>
+
+    <div class="h4">Monday – Friday</div>
+    <div class="lane"><span class="nm">Brian</span>
+      <div class="offshade" style="left:0;width:13.33%"></div>
+      <div class="blk job" style="left:13.33%;width:33.33%"><span>Morning calls · regular · complete</span></div>
+      <div class="blk off2" style="left:46.67%;width:20%"><span>Office / trade / golf</span></div>
+      <div class="blk prem" style="left:66.67%;width:26.67%"><span>4–8 restart · emergency rates</span></div>
+      <div class="offshade" style="left:93.33%;width:6.67%"></div>
+    </div>
+    <div class="lane"><span class="nm">Jason</span>
+      <div class="offshade" style="left:0;width:13.33%"></div>
+      <div class="blk job" style="left:13.33%;width:33.33%"><span>Morning calls · regular · complete</span></div>
+      <div class="blk fm" style="left:46.67%;width:20%"><span>FM / scheduled work</span></div>
+      <div class="offshade" style="left:66.67%;width:33.33%"></div>
+    </div>
+
+    <div class="h4">Saturday &amp; Sunday (alternate weekends)</div>
+    <div class="lane"><span class="nm">On-call</span>
+      <div class="offshade" style="left:0;width:13.33%"></div>
+      <div class="blk prem" style="left:13.33%;width:80%"><span>All calls 8a–8p · emergency rates · complete the job</span></div>
+      <div class="offshade" style="left:93.33%;width:6.67%"></div>
+    </div>
+    <div class="axis" style="margin-top:2px">
+      <span style="left:13.33%">8a</span><span style="left:33.33%">11a</span><span style="left:46.67%">1p</span><span style="left:66.67%">4p</span><span style="left:93.33%">8p</span>
+    </div>
+
+    <div class="schedrules">
+      <div class="srule hot"><b>LSA budget throttle</b>Weekdays low — only buy what two trucks can complete. Weekends cranked + weekend hours ON. Pause when the board is full.</div>
+      <div class="srule"><b>Every call: the playbook</b>Callback in 3 min, quote a range, diagnostic paid at booking, "text me if you get it handled — deal?", inoculate against callbacks.</div>
+      <div class="srule hot"><b>After 4p &amp; all weekend</b>Emergency rates on the whole invoice — diagnostic and repair. Quote it straight at the door; the hot house does the selling.</div>
+      <div class="srule"><b>Night-call parts rule</b>No part on the truck? Collect the diagnostic, get the quote approved on site, part return is tomorrow's first slot — a pre-sold job, not a maybe.</div>
+      <div class="srule"><b>The dead zone (1–4)</b>Nothing lives here that can't be dropped: FM, part runs, office, quotes, trading, golf. Never book it against the bursts in cooling season.</div>
+      <div class="srule"><b>85° rule</b>Forecast 85°+ tomorrow → mornings stay clear of anything that can't be bumped. The empty slot is the product: it's what lets you say "45 minutes" at 8:30.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2><span class="k">Why it works</span>The Two Bursts</h2>
+    <p class="lead" style="margin-bottom:6px">Emergency demand isn't flat — it's two spikes: <b style="color:var(--txt)">wake-up-hot (7–10a)</b> and <b style="color:var(--txt)">come-home-hot (4–7p)</b>, because discovery only happens when someone's home. Weekends, people are home all day — demand runs continuous while half the vans in Metro Detroit are parked.</p>
+    <p class="lead">So the schedule puts trucks where the calls are, the break where they aren't, emergency rates where competition is thin, and the ad budget on the same curve. Same total hours as the old 8–4 grind — placed where the money is.</p>
+  </section>
+</div>
+
+<!-- ================================================================ SIM -->
+<div class="tab" id="tab-sim">
+
+  <section class="panel">
+    <h2><span class="k">Monte Carlo · 12 months, identical lead streams</span>MT Model vs Traditional</h2>
+    <p class="lead">Both schedules face the same weekday customers — same call times, same patience, same tickets. Traditional's weekend LSA is off, so it never sees (or pays for) weekend leads. Argue with the assumptions at the bottom.</p>
+    <div class="controls">
+      <div class="ctl"><label>Hot days this month (88°+)<span class="val" id="v_hot">14</span></label><input type="range" id="s_hot" min="4" max="26" value="14"></div>
+      <div class="ctl"><label>Weekday leads (hot day) · low budget<span class="val" id="v_wd">2.5</span></label><input type="range" id="s_wd" min="1" max="6" step="0.5" value="2.5"></div>
+      <div class="ctl"><label>Weekend leads (hot day) · high budget<span class="val" id="v_we">4.0</span></label><input type="range" id="s_we" min="1" max="9" step="0.5" value="4"></div>
+      <div class="ctl"><label>Close rate on diagnostics<span class="val" id="v_close">70%</span></label><input type="range" id="s_close" min="40" max="95" value="70"></div>
+      <div class="ctl"><label>Average repair ticket (regular)<span class="val" id="v_ticket">$520</span></label><input type="range" id="s_ticket" min="250" max="900" step="10" value="520"></div>
+      <div class="ctl"><label>Emergency rate uplift<span class="val" id="v_prem">35%</span></label><input type="range" id="s_prem" min="0" max="75" step="5" value="35"></div>
+      <div class="ctl"><label>Cost per LSA lead<span class="val" id="v_cost">$88</span></label><input type="range" id="s_cost" min="50" max="130" step="2" value="88"></div>
+    </div>
+    <div class="runrow">
+      <button class="run" id="run">Run Simulation</button>
+      <span class="runnote">New random weather every run.</span>
+    </div>
+  </section>
+
+  <div class="verdict" id="verdict">
+    <div class="big" id="delta">—</div>
+    <div class="cap" id="deltacap"></div>
+    <div class="sub2" id="deltasub"></div>
+  </div>
+
+  <section class="score panel" id="score">
+    <h2>Monthly Averages</h2>
+    <table>
+      <thead><tr><th>Metric</th><th class="a">A · Traditional 8–4, M–F</th><th class="d">MT · Complete &amp; Restart</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+
+  <section class="tl panel" id="tl">
+    <h2>Hour by Hour — Same Days, Both Ways</h2>
+    <div id="tlbody"></div>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>Job (regular)</span>
+      <span><i style="background:var(--amber)"></i>Job at emergency rate</span>
+      <span><i style="background:var(--blue)"></i>Diag only</span>
+      <span><i style="background:var(--green);outline:2px solid var(--amber);outline-offset:-2px"></i>Parts return (pre-sold)</span>
+      <span><i style="background:var(--gray)"></i>FM / scheduled</span>
+      <span class="dry"><i></i>Dry run</span>
+    </div>
+  </section>
+
+  <details>
+    <summary>Model assumptions — argue with these</summary>
+    <div class="inner">
+      <p><b>Demand:</b> weekday leads cluster ~58% in the 7–10am burst, ~27% in the 3:30–7pm window, rest scattered. Weekend leads run an all-day plateau 9am–7pm. Volume scales with temperature. The two lead sliders are your LSA budget throttle.</p>
+      <p><b>Thin competition:</b> after 4pm and all weekend, win odds get a 1.35× boost (capped 92%) — half the vans went home.</p>
+      <p><b>Win odds vs offered arrival:</b> under 30 min ≈ 85%, 1 hr ≈ 72%, 2 hr ≈ 50%, 3 hr ≈ 30%, 5+ hr ≈ 5%.</p>
+      <p><b>A · Traditional:</b> both trucks M–F 8–4, Jason's mornings carry FM (8–11). Complete-the-job, regular rates only. No deposit, no texts: 15–25% ghost, 60% of ghosts roll a truck. After-3pm callers get "tomorrow" (10% stick). Weekend LSA off.</p>
+      <p><b>MT · Complete &amp; Restart:</b> weekdays — Brian 8–1 then 4–8, Jason 8–4 with FM at 1–4. Morning jobs completed in one visit at regular rate; every call after 4pm runs that evening at emergency rates (uplift on the whole invoice, diagnostic included). Part not on the truck → repair returns first slot next morning pre-sold (~3% fall-through — diagnostic paid in person, quote approved). Weekends: one truck 8a–8p, everything at emergency rates. Playbook stack: 5% ghost, 90% caught before rolling. LSA pauses when the board is full.</p>
+      <p><b>Money:</b> $89 diagnostic per completed visit ($89 + uplift on emergency calls), ticket ±40% around the average, uplift on the full invoice for evening/weekend work. FM billed $140/hr, 3 hrs every weekday in both schedules. Owner hours assume alternating weekends.</p>
+      <p><b>Fairness:</b> each weekday customer's patience, ghost tendency, close decision, parts-on-truck, and ticket size are drawn once and shared by both schedules.</p>
+    </div>
+  </details>
+</div>
+
+<footer>Mechanical Temp LLC · MT Operations v1 · Playbook + Week + Simulator</footer>
+</div>
+
+<script>
+// ---------- tabs ----------
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    window.scrollTo({top:0});
+  });
+});
+
+// ---------- copy buttons ----------
+document.querySelectorAll('[data-copy]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var body = btn.parentElement.querySelector('.body');
+    var text = body ? body.textContent.trim() : '';
+    function done(){ btn.textContent='Copied'; setTimeout(function(){btn.textContent='Copy';},1500); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){fallback();});
+    } else { fallback(); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta); done();
+    }
+  });
+});
+
+// ---------- sim engine ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function poisson(l,r){let L=Math.exp(-l),k=0,p=1;do{k++;p*=r()}while(p>L);return k-1}
+function gauss(r){return Math.sqrt(-2*Math.log(1-r()))*Math.cos(2*Math.PI*r())}
+const fmt$=n=>'$'+Math.round(n).toLocaleString();
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+
+function truck(name,windows){return{name,windows,busy:[]}}
+function findSlot(t,dur,earliest,latestEnd){
+  for(const[ws,we]of t.windows){
+    const end=latestEnd?Math.min(we,latestEnd):we;
+    let s=Math.max(ws,earliest);
+    while(s+dur<=end+1e-9){
+      const c=t.busy.find(b=>s<b.e-1e-9&&s+dur>b.s+1e-9);
+      if(!c)return s;
+      s=c.e;
+    }
+  }
+  return null;
+}
+function book(t,s,dur,type){const b={s,e:s+dur,type};t.busy.push(b);t.busy.sort((x,y)=>x.s-y.s);return b}
+
+function genMonth(P,rng){
+  const days=[];const hotIdx=new Set();
+  const order=[...Array(30).keys()].sort(()=>rng()-0.5);
+  for(let i=0;i<P.hotDays;i++)hotIdx.add(order[i]);
+  for(let d=0;d<30;d++){
+    const dow=d%7, weekend=dow>=5;
+    const temp=hotIdx.has(d)?88+rng()*9:74+rng()*10;
+    const heat=clamp((temp-74)/20,0.2,1.25);
+    const vol=(weekend?P.weLeads:P.wdLeads)*heat;
+    const n=poisson(vol,rng);
+    const leads=[];
+    for(let i=0;i<n;i++){
+      let t;
+      if(weekend){t=rng()<0.2?8.6+Math.abs(gauss(rng))*0.9:9+rng()*10}
+      else{
+        const u=rng();
+        if(u<0.58)t=8.3+gauss(rng)*0.9;
+        else if(u<0.85)t=16.6+gauss(rng)*1.0;
+        else t=10+rng()*5.5;
+      }
+      t=clamp(t,6.6,19.8);
+      leads.push({t,winRoll:rng(),ghostRoll:rng(),closeRoll:rng(),lockRoll:rng(),
+        partsOnTruck:rng()<0.5,ticket:P.ticket*(0.6+rng()*0.8),weekend});
+    }
+    leads.sort((a,b)=>a.t-b.t);
+    days.push({temp,leads,dow,weekend});
+  }
+  return days;
+}
+
+function winProb(waitH,thin){
+  let p;
+  if(waitH<=0.5)p=.85; else if(waitH<=1)p=.72; else if(waitH<=1.5)p=.60;
+  else if(waitH<=2)p=.50; else if(waitH<=3)p=.30; else if(waitH<=5)p=.12; else p=.04;
+  return thin?Math.min(0.92,p*1.35):p;
+}
+
+const TRAVEL=.4,DIAG=.7,REPAIR=1.5;
+
+function trucksFor(sched,dow){
+  const we=dow>=5;
+  if(sched==='A')return we?[]:[truck('Brian',[[8,16]]),truck('Jason',[[8,16]])];
+  if(we)return[truck('On-call',[[8,20]])];
+  return[truck('Brian',[[8,13],[16,20]]),truck('Jason',[[8,16]])];
+}
+function ownerHours(sched,dow){
+  const we=dow>=5;
+  if(sched==='A')return we?0:8;
+  return we?6:9;
+}
+
+function simMonth(sched,month,P,record){
+  const S={rev:0,fmRev:0,leadSpend:0,leadsIn:0,leadsPaid:0,wins:0,dry:0,prem:0,presold:0,
+           wkndRev:0,ownH:0,invoices:0,offSum:0,offN:0};
+  const mt=sched!=='A';
+  let carry=[];
+  let bestWD=null,bWDt=-1,bestWE=null,bWEt=-1;
+
+  const invoice=(L,emergency,isWknd)=>{
+    const up=emergency?P.prem:0;
+    let amt=89*(1+up);
+    S.prem+=89*up;
+    if(L.closeRoll<P.close){amt+=L.ticket*(1+up);S.prem+=L.ticket*up}
+    S.rev+=amt;S.invoices++;
+    if(isWknd)S.wkndRev+=amt;
+    return L.closeRoll<P.close;
+  };
+
+  for(let d=0;d<30;d++){
+    const day=month[d];
+    const trucks=trucksFor(sched,day.dow);
+    S.ownH+=ownerHours(sched,day.dow);
+    if(!day.weekend&&trucks.length){
+      const jason=trucks.find(t=>t.name==='Jason');
+      if(jason){book(jason,sched==='A'?8:13,3,'fm');S.fmRev+=3*140}
+    }
+
+    const todayCarry=carry;carry=[];
+    for(const c of todayCarry){
+      if(!trucks.length){carry.push(c);continue}
+      if(c.kind==='repair'){
+        if(c.lead.lockRoll<0.03)continue;
+        const dur=TRAVEL+REPAIR;
+        let pl=null;
+        for(const tk of trucks){const s=findSlot(tk,dur,8);if(s!=null&&(pl==null||s<pl.s))pl={tk,s}}
+        if(!pl){carry.push(c);continue}
+        book(pl.tk,pl.s,dur,'lock');S.presold++;
+        const up=c.emergency?P.prem:0;
+        const amt=c.lead.ticket*(1+up);
+        S.rev+=amt;S.prem+=c.lead.ticket*up;S.invoices++;
+        if(day.weekend)S.wkndRev+=amt;
+      }else{
+        if(c.lead.lockRoll<0.4)continue;
+        const dur=TRAVEL+DIAG+(c.lead.partsOnTruck?REPAIR:0);
+        let pl=null;
+        for(const tk of trucks){const s=findSlot(tk,dur,8);if(s!=null&&(pl==null||s<pl.s))pl={tk,s}}
+        if(!pl){carry.push(c);continue}
+        S.wins++;
+        const closed=invoice(c.lead,false,day.weekend);
+        book(pl.tk,pl.s,dur,closed&&c.lead.partsOnTruck?'job':'diag');
+        if(closed&&!c.lead.partsOnTruck)carry.push({kind:'repair',lead:c.lead,emergency:false});
+      }
+    }
+
+    for(const L of day.leads){
+      if(sched==='A'&&day.weekend)continue;
+      S.leadsIn++;
+      const thin=day.weekend||L.t>=16;
+      const emergency=mt&&thin;
+      const dur=TRAVEL+DIAG+(L.partsOnTruck?REPAIR:0);
+      let best=null;
+      for(const tk of trucks){
+        let s=findSlot(tk,dur,L.t+0.15,mt?20.2:null);
+        let d2=dur;
+        if(s==null&&mt){s=findSlot(tk,TRAVEL+DIAG,L.t+0.15,20.2);d2=TRAVEL+DIAG}
+        if(s!=null&&(best==null||s<best.s))best={tk,s,dur:d2};
+      }
+
+      if(!best){
+        if(mt){
+          if(carry.length>=3)continue;
+          S.leadsPaid++;S.leadSpend+=P.leadCost;
+          if(L.winRoll<0.5){carry.push({kind:'diag',lead:L})}
+        }else{
+          S.leadsPaid++;S.leadSpend+=P.leadCost;
+          if(L.winRoll<0.10&&L.ghostRoll>=0.25){carry.push({kind:'diag',lead:L})}
+        }
+        continue;
+      }
+
+      S.leadsPaid++;S.leadSpend+=P.leadCost;
+      const wait=best.s-L.t;S.offSum+=wait;S.offN++;
+      if(L.winRoll>=winProb(wait,thin))continue;
+      const ghostP=mt?0.05:(wait>2?0.25:0.15);
+      if(L.ghostRoll<ghostP){
+        if(mt){if(L.ghostRoll<ghostP*0.1){book(best.tk,best.s,best.dur,'dry');S.dry++}}
+        else{if(L.ghostRoll<ghostP*0.6){book(best.tk,best.s,best.dur,'dry');S.dry++}}
+        continue;
+      }
+      S.wins++;
+      const fullVisit=best.dur>TRAVEL+DIAG+1e-9;
+      const closed=invoice(L,emergency,day.weekend);
+      const type=emergency?'prem':'job';
+      book(best.tk,best.s,best.dur,closed?type:'diag');
+      if(closed&&(!L.partsOnTruck||!fullVisit)){
+        const dur2=TRAVEL+REPAIR;
+        let pl=null;
+        for(const tk of trucks){const s=findSlot(tk,dur2,best.s+best.dur+(L.partsOnTruck?0:2),mt?20.2:null);if(s!=null&&(pl==null||s<pl.s))pl={tk,s}}
+        if(pl){book(pl.tk,pl.s,dur2,emergency?'prem':'job')}
+        else carry.push({kind:'repair',lead:L,emergency:false});
+      }
+    }
+
+    if(record){
+      if(day.weekend&&day.temp>bWEt){bWEt=day.temp;bestWE=snap(trucks,day)}
+      if(!day.weekend&&day.temp>bWDt){bWDt=day.temp;bestWD=snap(trucks,day)}
+    }
+  }
+  S.net=S.rev+S.fmRev-S.leadSpend;
+  S.avgWait=S.offN?S.offSum/S.offN:0;
+  if(record){S.sampleWD=bestWD;S.sampleWE=bestWE}
+  return S;
+  function snap(trucks,day){return{temp:day.temp,trucks:trucks.map(t=>({name:t.name,windows:t.windows,busy:t.busy}))}}
+}
+
+// ---------- run + render ----------
+const $=id=>document.getElementById(id);
+[['s_hot','v_hot',v=>v],['s_wd','v_wd',v=>(+v).toFixed(1)],['s_we','v_we',v=>(+v).toFixed(1)],['s_close','v_close',v=>v+'%'],['s_ticket','v_ticket',v=>'$'+v],['s_prem','v_prem',v=>v+'%'],['s_cost','v_cost',v=>'$'+v]]
+.forEach(([s,v,f])=>{$(s).addEventListener('input',e=>$(v).textContent=f(e.target.value))});
+
+$('run').addEventListener('click',()=>{
+  const P={hotDays:+$('s_hot').value,wdLeads:+$('s_wd').value,weLeads:+$('s_we').value,
+           close:+$('s_close').value/100,ticket:+$('s_ticket').value,
+           prem:+$('s_prem').value/100,leadCost:+$('s_cost').value};
+  const ITER=12,keys=['rev','fmRev','leadSpend','leadsIn','leadsPaid','wins','dry','prem','presold','net','wkndRev','ownH','invoices','avgWait'];
+  const agg={A:{},D:{}};['A','D'].forEach(s=>keys.forEach(k=>agg[s][k]=0));
+  let samples=null;
+  const seed=Math.floor(Math.random()*1e9);
+  for(let i=0;i<ITER;i++){
+    const rng=mulberry32(seed+i*7919);
+    const m1=genMonth(P,rng),m2=JSON.parse(JSON.stringify(m1));
+    const rec=i===0;
+    const R={A:simMonth('A',m1,P,rec),D:simMonth('D',m2,P,rec)};
+    ['A','D'].forEach(s=>keys.forEach(k=>agg[s][k]+=R[s][k]/ITER));
+    if(rec)samples=R;
+  }
+  render(agg,P,samples);
+});
+
+function render(g,P,R){
+  const d=g.D.net-g.A.net;
+  const el=$('delta');el.textContent=(d>=0?'+':'−')+fmt$(Math.abs(d));el.className='big'+(d<0?' neg':'');
+  $('deltacap').textContent=(d>=0?'Extra':'Less')+' net per month with the MT model ('+(d>=0?'+':'')+Math.round(d/Math.max(g.A.net,1)*100)+'%)';
+  $('deltasub').innerHTML='<b>'+fmt$(g.D.prem)+'</b> of that is pure emergency-rate uplift · <b>'+fmt$(g.D.wkndRev)+'</b> earned on weekends Traditional never sees · <b>'+Math.round(g.D.ownH)+' owner-hours</b> vs '+Math.round(g.A.ownH)+' ('+fmt$(g.D.net/Math.max(g.D.ownH,1))+'/hr vs '+fmt$(g.A.net/Math.max(g.A.ownH,1))+'/hr).';
+  $('verdict').style.display='block';
+
+  const row=(label,a,b,best)=>`<tr><td>${label}</td><td class="${best==='a'?'best':''}">${a}</td><td class="${best==='d'?'best':''}">${b}</td></tr>`;
+  const A=g.A,D=g.D,r0=x=>Math.round(x);
+  $('rows').innerHTML=
+    row('Emergency jobs won / month',A.wins.toFixed(1),D.wins.toFixed(1),D.wins>A.wins?'d':'a')+
+    row('Win rate on paid leads',r0(A.wins/Math.max(A.leadsPaid,1)*100)+'%',r0(D.wins/Math.max(D.leadsPaid,1)*100)+'%',null)+
+    row('Invoices written',A.invoices.toFixed(1),D.invoices.toFixed(1),D.invoices>A.invoices?'d':'a')+
+    row('Leads paid for',r0(A.leadsPaid),r0(D.leadsPaid),null)+
+    row('Lead spend',fmt$(A.leadSpend),fmt$(D.leadSpend),null)+
+    row('$ on leads lost',fmt$((A.leadsPaid-A.wins)*P.leadCost),fmt$((D.leadsPaid-D.wins)*P.leadCost),'d')+
+    row('Dry runs',A.dry.toFixed(1),D.dry.toFixed(1),D.dry<A.dry?'d':'a')+
+    row('Parts returns next AM (pre-sold)',A.presold.toFixed(1),D.presold.toFixed(1),null)+
+    row('Emergency-rate uplift collected',fmt$(A.prem),fmt$(D.prem),D.prem>A.prem?'d':'a')+
+    row('Weekend revenue',fmt$(A.wkndRev),fmt$(D.wkndRev),D.wkndRev>A.wkndRev?'d':'a')+
+    row('Service revenue',fmt$(A.rev),fmt$(D.rev),null)+
+    row('FM revenue (equal hours)',fmt$(A.fmRev),fmt$(D.fmRev),null)+
+    row('Owner hours on the clock',r0(A.ownH),r0(D.ownH),A.ownH<D.ownH?'a':'d')+
+    `<tr class="net"><td>Net after lead spend</td><td>${fmt$(A.net)}</td><td class="best">${fmt$(D.net)}</td></tr>`;
+  $('score').style.display='block';
+
+  const H0=6,H1=21,pctH=h=>((clamp(h,H0,H1)-H0)/(H1-H0)*100);
+  const lane=(tk)=>{
+    let s=`<div class="lane slim"><span class="nm">${tk.name}</span>`;
+    let cur=H0;
+    for(const[ws,we]of tk.windows){
+      if(ws>cur)s+=`<div class="offshade" style="left:${pctH(cur)}%;width:${pctH(ws)-pctH(cur)}%"></div>`;
+      cur=we;
+    }
+    if(cur<H1)s+=`<div class="offshade" style="left:${pctH(cur)}%;width:${pctH(H1)-pctH(cur)}%"></div>`;
+    for(const b of tk.busy){
+      const cls=b.type==='fm'?'fm':b.type==='prem'?'prem':b.type==='dry'?'dry':b.type==='lock'?'lock':b.type==='diag'?'diag':'job';
+      s+=`<div class="blk ${cls}" style="left:${pctH(b.s)}%;width:${Math.max(pctH(b.e)-pctH(b.s),1)}%"></div>`;
+    }
+    return s+'</div>';
+  };
+  const offLane=(who)=>`<div class="lane slim empty"><span class="nm">${who} — off</span><div class="offshade" style="left:0;width:100%"></div></div>`;
+  const names={A:'Traditional',D:'MT Model'};
+  const group=(title,key)=>{
+    let h='';let temp=null;
+    ['A','D'].forEach(k=>{const s=R[k]['sample'+key];if(s&&temp==null)temp=s.temp});
+    h+=`<h3>${title} <span class="temp">${temp!=null?Math.round(temp)+'°F':''}</span></h3>`;
+    ['A','D'].forEach(k=>{
+      const s=R[k]['sample'+key];
+      h+=`<div class="h4"><i>${names[k]}</i></div>`;
+      if(!s||!s.trucks.length){h+=offLane('Both trucks');return}
+      s.trucks.forEach(t=>h+=lane(t));
+    });
+    return h;
+  };
+  let axis='<div class="axis">';
+  for(let h=6;h<=21;h+=3)axis+=`<span style="left:${pctH(h)}%">${h<=12?h+'a':(h-12)+'p'}</span>`;
+  axis+='</div>';
+  $('tlbody').innerHTML=group('Hottest Weekday','WD')+group('Hottest Weekend Day','WE')+axis;
+  $('tl').style.display='block';
+}
+</script>
+</body>
+</html>
